@@ -1,0 +1,70 @@
+-- 1. Вывести все возможные пары строк преподавателей и групп.
+SELECT Teachers.Name +' '+ Teachers.Surname AS FullName, Groups.Name
+FROM Teachers, Lectures, GroupsLectures, Groups
+WHERE Lectures.TeacherId = Teachers.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+-- 2. Вывести названия факультетов, фонд финансирования кафедр которых превышает фонд финансирования факультета.
+SELECT Faculties.Name
+FROM Departments, Faculties
+WHERE Departments.Financing > Faculties.Financing
+AND Departments.FacultyId = Faculties.Id
+-- 3. Вывести фамилии кураторов групп и названия групп, которые они курируют.
+SELECT Curators.Surname, Groups.Name
+FROM Curators, Groups, GroupsCurators
+WHERE GroupsCurators.CuratorId = Curators.Id
+AND GroupsCurators.GroupId = Groups.Id
+-- 4. Вывести имена и фамилии преподавателей, которые читают лекции у группы “P107”.
+SELECT Teachers.Name +' '+ Teachers.Surname AS FullName, Groups.Name
+FROM Teachers, Groups, Lectures, GroupsLectures
+WHERE GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND Lectures.TeacherId = Teachers.Id
+AND Groups.Name = 'P107'
+-- 5. Вывести фамилии преподавателей и названия факультетов на которых они читают лекции.
+SELECT DISTINCT Teachers.Surname, Faculties.Name
+FROM Teachers, Lectures, GroupsLectures, Groups, Departments, Faculties
+WHERE Lectures.TeacherId = Teachers.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND Groups.DepartmentId = Departments.Id
+AND Departments.FacultyId = Faculties.Id
+-- 6. Вывести названия кафедр и названия групп, которые к ним относятся.
+SELECT Departments.Name, Groups.Name
+FROM Departments, Groups
+WHERE Groups.DepartmentId = Departments.Id
+-- 7. Вывести названия дисциплин, которые читает преподаватель “Samantha Adams”.
+SELECT Teachers.Name +' '+ Teachers.Surname AS FullName, Subjects.Name
+FROM Teachers, Subjects, Lectures
+WHERE Lectures.SubjectId = Subjects.Id
+AND Lectures.TeacherId = Teachers.Id
+AND Teachers.Name = 'Samantha'
+AND Teachers.Surname = 'Adams'
+-- 8. Вывести названия кафедр, на которых читается дисциплина “Database Theory”.
+SELECT Departments.Name
+FROM Departments, Groups, GroupsLectures, Lectures, Subjects
+WHERE Subjects.Name = 'Database Theory'
+AND Lectures.SubjectId = Subjects.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND Groups.DepartmentId = Departments.Id
+-- 9. Вывести названия групп, которые относятся к факультету “Computer Science”.
+SELECT Groups.Name
+FROM Groups, Departments, Faculties
+WHERE Faculties.Name = 'Computer Science'
+AND Groups.DepartmentId = Departments.Id
+AND Departments.FacultyId = Faculties.Id
+--10. Вывести названия групп 5-го курса, а также название факультетов, к которым они относятся.
+SELECT Groups.Name, Faculties.Name
+FROM Groups, Departments, Faculties
+WHERE Groups.Year = 5
+AND Groups.DepartmentId = Departments.Id
+AND Departments.FacultyId = Faculties.Id
+--11. Вывести полные имена преподавателей и лекции, которые они читают (названия дисциплин и групп), причём отобрать только те лекции, которые читаются в аудитории “B103”.
+SELECT Teachers.Name +' '+ Teachers.Surname AS FullName, Subjects.Name, Groups.Name
+FROM Teachers, Subjects, Groups, GroupsLectures, Lectures
+WHERE Lectures.LectureRoom = 'B103'
+AND Lectures.TeacherId = Teachers.Id
+AND Lectures.SubjectId = Subjects.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
