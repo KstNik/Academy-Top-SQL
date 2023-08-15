@@ -1,0 +1,87 @@
+-- 1. Вывести номера корпусов, если суммарный фонд финансирования расположенных в них кафедр превышает 100000.
+SELECT Departments.Building
+FROM Departments
+GROUP BY Departments.Building
+HAVING SUM(Departments.Financing) > 100000
+-- 2. Вывести названия групп 5-го курса кафедры “Software Development”, которые имеют более 10 пар в первую неделю.
+SELECT Groups.Name
+FROM Groups, Departments, Faculties, GroupsLectures, Lectures
+WHERE Groups.Year = 5
+AND Departments.Name = 'Software Development'
+AND Groups.DepartmentId = Departments.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND Lectures.Date < (SELECT DATEADD(day, 7, (SELECT MIN(Date) FROM Lectures)))
+GROUP BY Groups.Name
+HAVING COUNT(*) > 10
+-- 3. Вывести названия групп, имеющих рейтинг (средний рейтинг всех студентов группы) больше, чем рейтинг группы “D221”.
+SELECT Groups.Name
+FROM Groups, GroupsStudents, Students
+WHERE GroupsStudents.StudentId = Students.Id
+AND GroupsStudents.GroupId = Groups.Id
+GROUP BY Groups.Name
+HAVING AVG(Students.Rating) > (SELECT AVG (Students.Rating)
+FROM Groups, GroupsStudents, Students
+WHERE Groups.Name = 'D221'
+AND GroupsStudents.StudentId = Students.Id
+AND GroupsStudents.GroupId = Groups.Id)
+-- 4. Вывести фамилии и имена преподавателей, ставка которых выше средней ставки профессоров.
+SELECT Teachers.Name, Teachers.Surname
+FROM Teachers
+WHERE Teachers.IsProfessor = 0
+AND Teachers.Salary > (SELECT AVG (Teachers.Salary)
+FROM Teachers
+WHERE Teachers.IsProfessor = 1)
+-- 5. Вывести названия групп, у которых больше одного куратора.
+SELECT Groups.Name
+FROM Groups, GroupsCurators, Curators
+WHERE GroupsCurators.GroupId = Groups.Id
+AND GroupsCurators.CuratorId = Curators.Id
+GROUP BY Groups.Name
+HAVING COUNT(*) > 1
+-- 6. Вывести названия групп, имеющих рейтинг (средний рейтинг всех студентов группы) меньше, чем минимальный рейтинг групп 5-го курса
+SELECT Groups.Name
+FROM Groups, GroupsStudents, Students
+WHERE GroupsStudents.StudentId = Students.Id
+AND GroupsStudents.GroupId = Groups.Id
+GROUP BY Groups.Name
+HAVING AVG(Students.Rating) < (SELECT MIN (Students.Rating)
+FROM Groups, GroupsStudents, Students
+WHERE Groups.Year = 5
+AND GroupsStudents.StudentId = Students.Id
+AND GroupsStudents.GroupId = Groups.Id)
+-- 7. Вывести названия факультетов, суммарный фонд финансирования кафедр которых больше суммарного фонда финансирования кафедр факультета “Computer Science”.
+SELECT DISTINCT Faculties.Name
+FROM Departments, Faculties
+WHERE Departments.FacultyId = Faculties.Id
+AND Departments.Financing > (SELECT SUM (Departments.Financing)
+FROM Departments, Faculties
+WHERE Faculties.Name = 'Computer Science'
+AND Departments.FacultyId = Faculties.Id)
+-- 8. Вывести названия дисциплин и полные имена преподавателей, читающих наибольшее количество лекций по ним.
+SELECT Subjects.Name, Teachers.Name +' '+ Teachers.Surname AS FullName, COUNT(*) As NumberLectures
+FROM Teachers, Subjects, Lectures
+WHERE Lectures.TeacherId = Teachers.Id
+AND Lectures.SubjectId = Subjects.Id
+GROUP BY Subjects.Name, Teachers.Name, Teachers.Surname
+ORDER BY COUNT(*) DESC
+--9. Вывести название дисциплины, по которой читается меньше всего лекций.
+SELECT Subjects.Name, COUNT(*) As NumberLectures
+FROM Subjects, Lectures
+WHERE Lectures.SubjectId = Subjects.Id
+GROUP BY Subjects.Name
+ORDER BY COUNT(*)
+--10. Вывести количество студентов и читаемых дисциплин на кафедре “Software Development”.
+SELECT COUNT (*) As NumberStudents
+FROM Students, GroupsStudents, Groups, Departments
+WHERE GroupsStudents.StudentId = Students.Id
+AND GroupsStudents.GroupId = Groups.Id
+AND Groups.DepartmentId = Departments.Id
+AND Departments.Name = 'Software Development'
+SELECT COUNT (*) As NumberSubjects
+FROM Subjects, Lectures, GroupsLectures, Groups, Departments
+WHERE Lectures.SubjectId = Subjects.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND Groups.DepartmentId = Departments.Id
+AND Departments.Name = 'Software Development'
