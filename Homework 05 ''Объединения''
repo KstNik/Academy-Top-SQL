@@ -1,0 +1,90 @@
+-- 1. Вывести названия аудиторий, в которых читает лекции преподаватель “Edward Hopper”.
+SELECT LectureRooms.Name
+FROM Teachers, Lectures, Schedules, LectureRooms
+WHERE Teachers.Name = 'Edward'
+AND Teachers.Surname = 'Hopper'
+AND Lectures.TeacherId = Teachers.Id
+AND Schedules.LectureId = Lectures.Id
+AND Schedules.LectureRoomId = LectureRooms.Id
+GROUP BY LectureRooms.Name
+-- 2. Вывести фамилии ассистентов, читающих лекции в группе “F505”.
+SELECT Teachers.Surname
+FROM Assistants, Teachers, Lectures, GroupsLectures, Groups
+WHERE Groups.Name = 'F505'
+AND Assistants.TeacherId = Teachers.Id
+AND Lectures.TeacherId = Teachers.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+GROUP BY Teachers.Surname
+-- 3. Вывести дисциплины, которые читает преподаватель “Alex Carmack” для групп 5-го курса.
+SELECT Subjects.Name
+FROM Teachers, Lectures, GroupsLectures, Groups, Subjects
+WHERE Teachers.Name = 'Alex'
+AND Teachers.Surname = 'Carmack'
+AND Groups.Year = 5
+AND Lectures.TeacherId = Teachers.Id
+AND GroupsLectures.LectureId = Lectures.Id
+AND GroupsLectures.GroupId = Groups.Id
+AND Lectures.SubjectId = Subjects.Id
+GROUP BY Subjects.Name
+-- 4. Вывести фамилии преподавателей, которые не читают лекции по понедельникам.
+SELECT Teachers.Surname
+FROM Teachers, Lectures, Schedules
+WHERE Schedules.DayOfWeek != 1
+AND Lectures.TeacherId = Teachers.Id
+AND Schedules.LectureId = Lectures.Id
+GROUP BY Teachers.Surname
+-- 5. Вывести названия аудиторий, с указанием их корпусов, в которых нет лекций в среду второй недели на третьей паре.
+SELECT LectureRooms.Name, LectureRooms.Building
+FROM LectureRooms, Schedules
+WHERE (Schedules.DayOfWeek != 3
+OR Schedules.Week != 2
+OR Schedules.Class != 3)
+AND Schedules.LectureRoomId = LectureRooms.Id
+GROUP BY LectureRooms.Name, LectureRooms.Building
+-- 6. Вывести полные имена преподавателей факультета “Computer Science”, которые не курируют группы кафедры “Software Development”.
+SELECT Teachers.Name +' '+ Teachers.Surname AS FullName
+FROM Teachers, Curators, GroupsCurators, Groups, Departments, Faculties
+WHERE Faculties.Name = 'Computer Science'
+AND Departments.Name != 'Software Development'
+AND Curators.TeacherId = Teachers.Id
+AND GroupsCurators.CuratorId = Curators.Id
+AND GroupsCurators.GroupId = Groups.Id
+AND Groups.DepartmentId = Departments.Id
+AND Departments.FacultyId = Faculties.Id
+GROUP BY Teachers.Name, Teachers.Surname
+-- 7. Вывести список номеров всех корпусов, которые имеются в таблицах факультетов, кафедр и аудиторий.
+SELECT Faculties.Building
+FROM Faculties
+UNION
+SELECT Departments.Building
+FROM Departments
+UNION
+SELECT LectureRooms.Building
+FROM LectureRooms
+-- 8. Вывести полные имена преподавателей в следующем порядке: деканы факультетов, заведующие кафедрами, преподаватели, кураторы, ассистенты.
+SELECT Sort.Name +' '+ Sort.Surname AS FullName
+FROM (
+SELECT Teachers.Name, Teachers.Surname, 1 AS Ind
+FROM Deans LEFT JOIN Teachers ON Deans.TeacherId=Teachers.Id
+UNION
+SELECT Teachers.Name, Teachers.Surname, 2 AS Ind
+FROM Heads LEFT JOIN Teachers ON Heads.TeacherId=Teachers.Id
+UNION
+SELECT Teachers.Name, Teachers.Surname, 3 AS Ind
+FROM Lectures LEFT JOIN Teachers ON Lectures.TeacherId=Teachers.Id
+UNION
+SELECT Teachers.Name, Teachers.Surname, 4 AS Ind
+FROM Curators LEFT JOIN Teachers ON Curators.TeacherId=Teachers.Id
+UNION
+SELECT Teachers.Name, Teachers.Surname, 5 AS Ind
+FROM Assistants LEFT JOIN Teachers ON Assistants.TeacherId=Teachers.Id) Sort
+ORDER BY Sort.Ind, Sort.Name, Sort.Surname
+--9. Вывести дни недели (без повторений), в которые имеются занятия в аудиториях “A311” и “A104” корпуса 6.
+SELECT Schedules.DayOfWeek
+FROM Schedules, LectureRooms
+WHERE (LectureRooms.Name = 'A311'
+OR LectureRooms.Name = 'A104')
+AND LectureRooms.Building = 6
+AND Schedules.LectureRoomId = LectureRooms.Id
+GROUP BY Schedules.DayOfWeek
