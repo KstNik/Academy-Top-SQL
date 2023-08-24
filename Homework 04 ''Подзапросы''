@@ -59,26 +59,26 @@ FROM Departments, Faculties
 WHERE Faculties.Name = 'Computer Science'
 AND Departments.FacultyId = Faculties.Id)
 -- 8. Вывести названия дисциплин и полные имена преподавателей, читающих наибольшее количество лекций по ним.
-SELECT Subjects.Name, Teachers.Name +' '+ Teachers.Surname AS FullName, COUNT(*) As NumberLectures
+SELECT Subjects.Name, Teachers.Name +' '+ Teachers.Surname AS FullName, COUNT(*) AS NumberLectures
 FROM Teachers, Subjects, Lectures
 WHERE Lectures.TeacherId = Teachers.Id
 AND Lectures.SubjectId = Subjects.Id
 GROUP BY Subjects.Name, Teachers.Name, Teachers.Surname
 ORDER BY COUNT(*) DESC
 --9. Вывести название дисциплины, по которой читается меньше всего лекций.
-SELECT Subjects.Name, COUNT(*) As NumberLectures
+SELECT Subjects.Name, COUNT(*) AS NumberLectures
 FROM Subjects, Lectures
 WHERE Lectures.SubjectId = Subjects.Id
 GROUP BY Subjects.Name
 ORDER BY COUNT(*)
 --10. Вывести количество студентов и читаемых дисциплин на кафедре “Software Development”.
-SELECT COUNT (*) As NumberStudents
+SELECT COUNT (*) AS NumberStudents
 FROM Students, GroupsStudents, Groups, Departments
 WHERE GroupsStudents.StudentId = Students.Id
 AND GroupsStudents.GroupId = Groups.Id
 AND Groups.DepartmentId = Departments.Id
 AND Departments.Name = 'Software Development'
-SELECT COUNT (*) As NumberSubjects
+SELECT COUNT (*) AS NumberSubjects
 FROM Subjects, Lectures, GroupsLectures, Groups, Departments
 WHERE Lectures.SubjectId = Subjects.Id
 AND GroupsLectures.LectureId = Lectures.Id
