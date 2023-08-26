@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [BookShop]    Script Date: 10.08.2023 20:18:30 ******/
+/****** Object:  Database [BookShop] ******/
 CREATE DATABASE [BookShop]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -87,7 +87,7 @@ ALTER DATABASE SCOPED CONFIGURATION SET QUERY_OPTIMIZER_HOTFIXES = OFF;
 GO
 USE [BookShop]
 GO
-/****** Object:  Table [dbo].[Authors]    Script Date: 10.08.2023 20:18:30 ******/
+/****** Object:  Table [dbo].[Authors] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -122,7 +122,7 @@ CREATE TABLE [dbo].[Books](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Countries]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Table [dbo].[Countries] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -136,7 +136,7 @@ CREATE TABLE [dbo].[Countries](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Sales]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Table [dbo].[Sales] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -154,7 +154,7 @@ CREATE TABLE [dbo].[Sales](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Shops]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Table [dbo].[Shops] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -169,7 +169,7 @@ CREATE TABLE [dbo].[Shops](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Themes]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Table [dbo].[Themes] ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -183,13 +183,13 @@ CREATE TABLE [dbo].[Themes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Index [NameIndex_Table_Countries]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Index [NameIndex_Table_Countries] ******/
 CREATE UNIQUE NONCLUSTERED INDEX [NameIndex_Table_Countries] ON [dbo].[Countries]
 (
 	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [NameIndex_Table_Themes]    Script Date: 10.08.2023 20:18:31 ******/
+/****** Object:  Index [NameIndex_Table_Themes] ******/
 CREATE UNIQUE NONCLUSTERED INDEX [NameIndex_Table_Themes] ON [dbo].[Themes]
 (
 	[Id] ASC
