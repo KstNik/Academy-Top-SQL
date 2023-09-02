@@ -1,0 +1,644 @@
+--I. База данных «Телефонный справочник»
+USE [master]
+ GO
+/****** Object:  Database [Phonebook] ******/
+CREATE DATABASE [Phonebook]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'Phonebook', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Phonebook.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'Phonebook_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Phonebook_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+GO
+ALTER DATABASE [Phonebook] SET COMPATIBILITY_LEVEL = 130
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [Phonebook].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [Phonebook] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [Phonebook] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [Phonebook] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [Phonebook] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [Phonebook] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [Phonebook] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [Phonebook] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [Phonebook] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [Phonebook] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [Phonebook] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [Phonebook] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [Phonebook] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [Phonebook] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [Phonebook] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [Phonebook] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [Phonebook] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [Phonebook] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [Phonebook] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [Phonebook] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [Phonebook] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [Phonebook] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [Phonebook] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [Phonebook] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [Phonebook] SET  MULTI_USER 
+GO
+ALTER DATABASE [Phonebook] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [Phonebook] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [Phonebook] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [Phonebook] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [Phonebook] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [Phonebook] SET QUERY_STORE = OFF
+GO
+USE [Phonebook]
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET LEGACY_CARDINALITY_ESTIMATION = OFF;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 0;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET PARAMETER_SNIFFING = ON;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET QUERY_OPTIMIZER_HOTFIXES = OFF;
+GO
+USE [Phonebook]
+GO
+/****** Object:  Table [dbo].[People] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[People](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Surname] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Patronymic] [nvarchar](max) NULL,
+	[DateBirth] [date] NOT NULL,
+	[Gender] [varchar](1) NOT NULL,
+	[Telephone] [nvarchar](max) NOT NULL,
+	[City] [nvarchar](max) NOT NULL,
+	[Country] [nvarchar](max) NOT NULL,
+	[Street] [nvarchar](max) NOT NULL,
+	[HouseNumber] [int] NOT NULL,
+	[HouseNumberExtension] [nchar](10) NULL,
+	[ApartmentNumber] [int] NULL,
+ CONSTRAINT [PK_People] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Index [Telephone_People] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_People] ON [dbo].[People]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [ApartmentNumber_People] CHECK  (([ApartmentNumber]>(0)))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [ApartmentNumber_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [City_People] CHECK  (([City]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [City_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Country_People] CHECK  (([Country]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Country_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [DateBirth_People] CHECK  (([DateBirth]>='1900-01-01'))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [DateBirth_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Gender_People] CHECK  (([Gender]='M' OR [Gender]='F'))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Gender_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [HouseNumber_People] CHECK  (([HouseNumber]>(0)))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [HouseNumber_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Name_People] CHECK  (([Name]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Name_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Street_People] CHECK  (([Street]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Street_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Surname_People] CHECK  (([Surname]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Surname_People]
+GO
+ALTER TABLE [dbo].[People]  WITH CHECK ADD  CONSTRAINT [Telephone_People] CHECK  (([Telephone]<>N''))
+GO
+ALTER TABLE [dbo].[People] CHECK CONSTRAINT [Telephone_People]
+GO
+USE [master]
+GO
+ALTER DATABASE [Phonebook] SET  READ_WRITE 
+GO
+--II. База данных «Продажи»
+USE [master]
+GO
+/****** Object:  Database [Sales] ******/
+CREATE DATABASE [Sales]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'Sales', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Sales.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'Sales_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Sales_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+GO
+ALTER DATABASE [Sales] SET COMPATIBILITY_LEVEL = 130
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [Sales].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [Sales] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [Sales] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [Sales] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [Sales] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [Sales] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [Sales] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [Sales] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [Sales] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [Sales] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [Sales] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [Sales] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [Sales] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [Sales] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [Sales] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [Sales] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [Sales] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [Sales] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [Sales] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [Sales] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [Sales] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [Sales] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [Sales] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [Sales] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [Sales] SET  MULTI_USER 
+GO
+ALTER DATABASE [Sales] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [Sales] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [Sales] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [Sales] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [Sales] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [Sales] SET QUERY_STORE = OFF
+GO
+USE [Sales]
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET LEGACY_CARDINALITY_ESTIMATION = OFF;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 0;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET PARAMETER_SNIFFING = ON;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET QUERY_OPTIMIZER_HOTFIXES = OFF;
+GO
+USE [Sales]
+GO
+/****** Object:  Table [dbo].[Buyer] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Buyer](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Surname] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Patronymic] [nvarchar](max) NULL,
+	[Email] [nvarchar](max) NULL,
+	[Telephone] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Buyer] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Sale] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Sale](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ProductName] [nvarchar](max) NOT NULL,
+	[Price] [money] NOT NULL,
+	[DateSale] [date] NOT NULL,
+	[SalesmanId] [int] NOT NULL,
+	[BueyerId] [int] NOT NULL,
+ CONSTRAINT [PK_Sale] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Salesman] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Salesman](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Surname] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Patronymic] [nvarchar](max) NULL,
+	[Email] [nvarchar](max) NULL,
+	[Telephone] [nvarchar](max) NULL,
+ CONSTRAINT [PK_Salesman] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Index [Email_Buyer] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Email_Buyer] ON [dbo].[Buyer]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Telephone_Buyer] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_Buyer] ON [dbo].[Buyer]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Email_Salesman] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Email_Salesman] ON [dbo].[Salesman]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Telephone_Salesman] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_Salesman] ON [dbo].[Salesman]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Buyer] FOREIGN KEY([BueyerId])
+REFERENCES [dbo].[Buyer] ([Id])
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Buyer]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Salesman] FOREIGN KEY([SalesmanId])
+REFERENCES [dbo].[Salesman] ([Id])
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Salesman]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Name_Buyer] CHECK  (([Name]<>N''))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Name_Buyer]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Surname_Buyer] CHECK  (([Surname]<>N''))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Surname_Buyer]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [DateSale_Sale] CHECK  (([DateSale]>='2023-01-01'))
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [DateSale_Sale]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [Price_Sale] CHECK  (([Price]>(0)))
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [Price_Sale]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [ProductName_Sale] CHECK  (([ProductName]<>N''))
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [ProductName_Sale]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Name_Salesman] CHECK  (([Name]<>N''))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Name_Salesman]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Surname_Salesman] CHECK  (([Surname]<>N''))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Surname_Salesman]
+GO
+USE [master]
+GO
+ALTER DATABASE [Sales] SET  READ_WRITE 
+GO
+--III. База данных «Музыкальная коллекция»
+USE [master]
+GO
+/****** Object:  Database [MusicCollection] ******/
+CREATE DATABASE [MusicCollection]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'MusicCollection', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\MusicCollection.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'MusicCollection_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\MusicCollection_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+GO
+ALTER DATABASE [MusicCollection] SET COMPATIBILITY_LEVEL = 130
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [MusicCollection].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [MusicCollection] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [MusicCollection] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [MusicCollection] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [MusicCollection] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [MusicCollection] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [MusicCollection] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [MusicCollection] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [MusicCollection] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [MusicCollection] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [MusicCollection] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [MusicCollection] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [MusicCollection] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [MusicCollection] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [MusicCollection] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [MusicCollection] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [MusicCollection] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [MusicCollection] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [MusicCollection] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [MusicCollection] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [MusicCollection] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [MusicCollection] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [MusicCollection] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [MusicCollection] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [MusicCollection] SET  MULTI_USER 
+GO
+ALTER DATABASE [MusicCollection] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [MusicCollection] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [MusicCollection] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [MusicCollection] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [MusicCollection] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [MusicCollection] SET QUERY_STORE = OFF
+GO
+USE [MusicCollection]
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET LEGACY_CARDINALITY_ESTIMATION = OFF;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 0;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET PARAMETER_SNIFFING = ON;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET QUERY_OPTIMIZER_HOTFIXES = OFF;
+GO
+USE [MusicCollection]
+GO
+/****** Object:  Table [dbo].[Disk] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Disk](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[NameDisk] [nvarchar](max) NOT NULL,
+	[DateRelease] [date] NOT NULL,
+	[SingerId] [int] NOT NULL,
+	[StyleId] [int] NOT NULL,
+	[IssuerId] [int] NOT NULL,
+ CONSTRAINT [PK_Disk] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Issuer] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Issuer](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[NameIssuer] [nvarchar](max) NOT NULL,
+	[Country] [nvarchar](max) NOT NULL,
+ CONSTRAINT [PK_Issuer] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Singer] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Singer](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Singer] [nvarchar](max) NOT NULL,
+ CONSTRAINT [PK_Singer] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Song] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Song](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[NameSong] [nvarchar](50) NOT NULL,
+	[Duration] [time](0) NOT NULL,
+	[DiskId] [int] NOT NULL,
+	[SingerId] [int] NOT NULL,
+	[StyleId] [int] NOT NULL,
+ CONSTRAINT [PK_Song] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Style] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Style](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Style] [nvarchar](50) NOT NULL,
+ CONSTRAINT [PK_Style] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Disk]  WITH CHECK ADD  CONSTRAINT [FK_Disk_Issuer] FOREIGN KEY([IssuerId])
+REFERENCES [dbo].[Issuer] ([Id])
+GO
+ALTER TABLE [dbo].[Disk] CHECK CONSTRAINT [FK_Disk_Issuer]
+GO
+ALTER TABLE [dbo].[Disk]  WITH CHECK ADD  CONSTRAINT [FK_Disk_Singer] FOREIGN KEY([SingerId])
+REFERENCES [dbo].[Singer] ([Id])
+GO
+ALTER TABLE [dbo].[Disk] CHECK CONSTRAINT [FK_Disk_Singer]
+GO
+ALTER TABLE [dbo].[Disk]  WITH CHECK ADD  CONSTRAINT [FK_Disk_Style] FOREIGN KEY([StyleId])
+REFERENCES [dbo].[Style] ([Id])
+GO
+ALTER TABLE [dbo].[Disk] CHECK CONSTRAINT [FK_Disk_Style]
+GO
+ALTER TABLE [dbo].[Song]  WITH CHECK ADD  CONSTRAINT [FK_Song_Disk] FOREIGN KEY([DiskId])
+REFERENCES [dbo].[Disk] ([Id])
+GO
+ALTER TABLE [dbo].[Song] CHECK CONSTRAINT [FK_Song_Disk]
+GO
+ALTER TABLE [dbo].[Song]  WITH CHECK ADD  CONSTRAINT [FK_Song_Singer] FOREIGN KEY([SingerId])
+REFERENCES [dbo].[Singer] ([Id])
+GO
+ALTER TABLE [dbo].[Song] CHECK CONSTRAINT [FK_Song_Singer]
+GO
+ALTER TABLE [dbo].[Song]  WITH CHECK ADD  CONSTRAINT [FK_Song_Style] FOREIGN KEY([StyleId])
+REFERENCES [dbo].[Style] ([Id])
+GO
+ALTER TABLE [dbo].[Song] CHECK CONSTRAINT [FK_Song_Style]
+GO
+ALTER TABLE [dbo].[Disk]  WITH CHECK ADD  CONSTRAINT [DateRelease_Disk] CHECK  (([DateRelease]>='2000-01-01'))
+GO
+ALTER TABLE [dbo].[Disk] CHECK CONSTRAINT [DateRelease_Disk]
+GO
+ALTER TABLE [dbo].[Disk]  WITH CHECK ADD  CONSTRAINT [NameDisk_Disk] CHECK  (([NameDisk]<>N''))
+GO
+ALTER TABLE [dbo].[Disk] CHECK CONSTRAINT [NameDisk_Disk]
+GO
+ALTER TABLE [dbo].[Issuer]  WITH CHECK ADD  CONSTRAINT [Country_Issuer] CHECK  (([Country]<>N''))
+GO
+ALTER TABLE [dbo].[Issuer] CHECK CONSTRAINT [Country_Issuer]
+GO
+ALTER TABLE [dbo].[Issuer]  WITH CHECK ADD  CONSTRAINT [NameIssuer_Issuer] CHECK  (([NameIssuer]<>N''))
+GO
+ALTER TABLE [dbo].[Issuer] CHECK CONSTRAINT [NameIssuer_Issuer]
+GO
+ALTER TABLE [dbo].[Singer]  WITH CHECK ADD  CONSTRAINT [Singer_Singer] CHECK  (([Singer]<>N''))
+GO
+ALTER TABLE [dbo].[Singer] CHECK CONSTRAINT [Singer_Singer]
+GO
+ALTER TABLE [dbo].[Song]  WITH CHECK ADD  CONSTRAINT [Duration_Song] CHECK  (([Duration]>'00:00:00'))
+GO
+ALTER TABLE [dbo].[Song] CHECK CONSTRAINT [Duration_Song]
+GO
+ALTER TABLE [dbo].[Song]  WITH CHECK ADD  CONSTRAINT [NameSong_Song] CHECK  (([NameSong]<>N''))
+GO
+ALTER TABLE [dbo].[Song] CHECK CONSTRAINT [NameSong_Song]
+GO
+ALTER TABLE [dbo].[Style]  WITH CHECK ADD  CONSTRAINT [Style_Style] CHECK  (([Style]<>N''))
+GO
+ALTER TABLE [dbo].[Style] CHECK CONSTRAINT [Style_Style]
+GO
+USE [master]
+GO
+ALTER DATABASE [MusicCollection] SET  READ_WRITE 
+GO
+--IV. Редактирование таблиц базы данных «Музыкальная коллекция»
+--1. Добавьте к уже существующей таблице с информацией о музыкальном диске столбец с краткой рецензией на него.
+ALTER TABLE Disk
+ADD Review NVARCHAR(MAX)
+-- 2. Добавьте к уже существующей таблице с информацией об издателе столбец с юридическим адресом главного офиса.
+ALTER TABLE Issuer
+ADD LegalAddress NVARCHAR(MAX)
+-- 3. Измените в уже существующей таблице с информацией о песнях размер поля, хранящий название песни.
+ALTER TABLE Song
+ALTER COLUMN NameSong NVARCHAR(100)
+-- 4. Удалите из уже существующей таблицы с информацией об издателе столбец с юридическим адресом главного офиса.
+ALTER TABLE Issuer
+DROP COLUMN LegalAddress
+-- 5. Удалите связь между таблицами «музыкальных дисков» и «исполнителей».
+ALTER TABLE Disk
+DROP FK_Disk_Singer
+-- 6. Добавьте связь между таблицами «музыкальных дисков» и «исполнителей».
+ALTER TABLE Disk
+ADD FOREIGN KEY (SingerId) REFERENCES Singer(Id)
+--V. Создание представлений базы данных «Музыкальная коллекция»
+-- 1. Представление отображает названия всех стилей.
+CREATE VIEW ViewStyle
+AS SELECT Style
+FROM Style
+-- 2. Представление отображает названия всех издателей.
+CREATE VIEW ViewIssuer
+AS SELECT NameIssuer
+FROM Issuer
+--3. Представление отображает полную информацию о диске: название диска, исполнитель, дата выпуска, стиль, издатель.
+CREATE VIEW ViewDisk
+AS SELECT NameDisk, Singer, DateRelease, Style, NameIssuer
+FROM Disk INNER JOIN Singer ON Disk.SingerId = Singer.Id
+INNER JOIN Style ON Disk.StyleId = Style.Id
+INNER JOIN Issuer ON Disk.IssuerId = Issuer.Id
