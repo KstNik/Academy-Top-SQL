@@ -69,13 +69,13 @@ GROUP BY Books.Name, Themes.Name, Authors.Name, Authors.Surname, Books.Price, Sa
 -- Среднее количество страниц: 650.6.
 SELECT CONCAT ('Количество авторов: ', COUNT(*))
 FROM Authors
-UNION 
+UNION
 SELECT CONCAT ('Количество книг: ', COUNT(*))
 FROM Books
 UNION
 SELECT CONCAT ('Средняя цена продажи: ', AVG(Price), ' руб.')
 FROM Sales
-UNION 
+UNION
 SELECT CONCAT ('Среднее количество страниц: ', AVG(Pages))
 FROM Books
 --9. Показать тематики книг и сумму страниц всех книг по каждой из них.
