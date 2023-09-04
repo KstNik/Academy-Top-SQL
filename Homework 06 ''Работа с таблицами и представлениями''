@@ -1,0 +1,121 @@
+--I. Создание представлений базы данных «Музыкальная коллекция»
+-- 1. Представление отображает названия всех исполнителей.
+CREATE VIEW ViewSinger
+AS SELECT Singer
+FROM Singer
+-- 2. Представление отображает полную информацию о всех песнях: название песни, название диска, длительность песни, музыкальный стиль песни, исполнитель.
+CREATE VIEW ViewSong
+AS SELECT NameSong, NameDisk, Duration, Style, Singer
+FROM Song INNER JOIN Disk ON Song.DiskId = Disk.Id
+INNER JOIN Style ON Song.StyleId = Style.Id
+INNER JOIN Singer ON Song. SingerId = Singer.Id
+--3. Представление отображает информацию о музыкальных дисках конкретной группы. Например, The Beatles.
+CREATE VIEW ViewDiskGroup
+AS SELECT NameDisk
+FROM Disk INNER JOIN Singer ON (Disk.SingerId = Singer.Id
+AND Singer = 'The Beatles')
+--4. Представление отображает название самого популярного в коллекции исполнителя. Популярность определяется по количеству дисков в коллекции.
+CREATE VIEW ViewSingerTOP1
+AS SELECT Singer
+FROM Singer INNER JOIN Disk ON Disk.SingerId = Singer.Id
+GROUP BY Singer
+HAVING COUNT(*) = (SELECT TOP 1 COUNT(*)
+FROM Singer INNER JOIN Disk ON Disk.SingerId = Singer.Id
+GROUP BY Singer
+ORDER BY COUNT(*) DESC)
+--5. Представление отображает топ-3 самых популярных в коллекции исполнителей. Популярность определяется по количеству дисков в коллекции.
+CREATE VIEW ViewSingerTOP3
+AS SELECT TOP 3 Singer
+FROM Singer INNER JOIN Disk ON Disk.SingerId = Singer.Id
+GROUP BY Singer
+ORDER BY COUNT(*) DESC
+--6. Представление отображает самый долгий по длительности музыкальный альбом.
+CREATE VIEW ViewLongSound
+AS SELECT NameDisk
+FROM Song, Disk
+WHERE Song.DiskId = Disk.Id
+GROUP BY NameDisk
+HAVING SUM(Duration) = (SELECT TOP 1 SUM(Duration) AS Sum
+FROM Song, Disk
+WHERE Song.DiskId = Disk.Id
+GROUP BY NameDisk
+ORDER BY SUM(Duration) DESC)
+--II. Создание обновляемых представлений базы данных «Музыкальная коллекция»
+-- 1. Создайте обновляемое представление, которое позволит вставлять новые стили.
+CREATE VIEW ViewStyleText
+AS SELECT Style
+FROM Style
+GO
+INSERT INTO ViewStyleText (Style)
+VALUES ('Техно')
+SELECT * FROM ViewStyleText
+-- 2. Создайте обновляемое представление, которое позволит вставлять новые песни.
+CREATE VIEW ViewSongText
+AS SELECT NameSong, Duration, DiskId, SingerId, StyleId
+FROM Song
+GO
+INSERT INTO ViewSongText (NameSong, Duration, DiskId, SingerId, StyleId)
+VALUES ('Мерцал закат', '00:03:15', 1, 1, 1)
+SELECT * FROM ViewSongTex
+--3. Создайте обновляемое представление, которое позволит обновлять информацию об издателе.
+CREATE VIEW ViewIssuerText
+AS SELECT NameIssuer, Country
+FROM Issuer
+GO
+UPDATE ViewIssuerText SET Country = 'СССР' WHERE NameIssuer = 'Мелодия'
+SELECT * FROM ViewIssuerText
+--4. Создайте обновляемое представление, которое позволит удалять исполнителей.
+CREATE VIEW ViewSingerDelete
+AS SELECT Singer
+FROM Singer
+GO
+DELETE FROM ViewSingerDelete WHERE Singer = 'The Beatles'
+SELECT * FROM ViewSingerDelete
+--5. Создайте обновляемое представление, которое позволит обновлять информацию о конкретном исполнителе. Например, Muse.
+CREATE VIEW ViewSingerText
+AS SELECT Singer
+FROM Singer
+GO
+UPDATE ViewSingerText SET Singer = 'The Muse' WHERE Singer = 'Muse'
+SELECT * FROM ViewSingerText
+III. Создание представлений базы данных «Продажи»
+-- 1. Создайте обновляемое представление, которое отображает информацию о всех продавцах.
+CREATE VIEW ViewSalesman
+AS SELECT Surname, Name, Patronymic, Email, Telephone
+FROM Salesman
+-- 2. Создайте обновляемое представление, которое отображает информацию о всех покупателях.
+CREATE VIEW ViewBuyer
+AS SELECT Surname, Name, Patronymic, Email, Telephone
+FROM Buyer
+--3. Создайте обновляемое представление, которое отображает информацию о всех продажах конкретного товара. Например, яблок.
+CREATE VIEW ViewProduct
+AS SELECT ProductName, Price, DateSale
+FROM Sale
+WHERE ProductName = 'Яблоки'
+--4. Создайте представление, отображающее все осуществлённые сделки.
+CREATE VIEW ViewSale
+AS SELECT ProductName, Price, DateSale, Surname As Salesman, Surname As Buyer
+FROM Sale INNER JOIN Sale ON Sale.SalesmanId = Salesman.Id
+INNER JOIN Sale ON Sale.BuyerId = Buyer.Id
+--5. Создайте представление, отображающее информацию о самом активном продавце. Определяем самого активного продавца по максимальной общей сумме продаж.
+CREATE VIEW ViewBestSalesman
+AS SELECT Name, Surname
+FROM Sale, Salesman
+WHERE Sale.SalesmanId = Salesman.Id
+GROUP BY Name, Surname
+HAVING SUM(Price) = (SELECT TOP 1 SUM(Price) AS Sum
+FROM Sale, Salesman
+WHERE Sale.SalesmanId = Salesman.Id
+GROUP BY Name, Surname
+ORDER BY SUM(Price) DESC)
+--6. Создайте представление, отображающее информацию о самом активном покупателе. Определяем самого активного покупателя по максимальной общей сумме покупок.
+CREATE VIEW ViewBestBuyer
+AS SELECT Name, Surname
+FROM Sale, Buyer
+WHERE Sale.BuyerId = Buyer.Id
+GROUP BY Name, Surname
+HAVING SUM(Price) = (SELECT TOP 1 SUM(Price) AS Sum
+FROM Sale, Buyer
+WHERE Sale.BuyerId = Buyer.Id
+GROUP BY Name, Surname
+ORDER BY SUM(Price) DESC)
