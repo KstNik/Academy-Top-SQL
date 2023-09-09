@@ -1,0 +1,174 @@
+--I. Триггеры к базе данных «Спортивный магазин»
+-- 1. При добавлении нового товара триггер проверяет его наличие на складе, если такой товар есть и новые данные о товаре совпадают с уже существующими данными, вместо добавления происходит обновление информации о количестве товара.
+CREATE TRIGGER CheckProductAvailabilityTrigger
+ON Product
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Product p
+        INNER JOIN inserted i ON p.ProductName = i.ProductName AND p.Type = i.Type AND p.Manufacturer = i.Manufacturer
+    )
+    BEGIN
+        UPDATE Product
+        SET ProductQuantity = i.ProductQuantity
+        FROM Product p
+        INNER JOIN inserted i ON p.ProductName = i.ProductName AND p.Type = i.Type AND p.Manufacturer = i.Manufacturer;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Product (ProductName, Type, ProductQuantity, СostPrice, Manufacturer, Price)
+        SELECT ProductName, Type, ProductQuantity, СostPrice, Manufacturer, Price FROM inserted;
+    END
+END
+GO
+-- 2. При увольнении сотрудника триггер переносит информацию об уволенном сотруднике в таблицу «Архив сотрудников».
+CREATE TRIGGER EmployeeArchiveTrigger
+ON Salesman
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO EmployeeArchive (SalesmanId, Surname, Name, Patronymic, DateEmploy, Gender, Salary)
+    SELECT Id, Surname, Name, Patronymic, DateEmploy, Gender, Salary GETDATE() FROM deleted;
+END
+GO
+--3. Триггер запрещает добавлять нового продавца, если количество существующих продавцов больше 6.
+CREATE TRIGGER MaxSalesmanCountTrigger
+ON Salesman
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF (
+        SELECT COUNT(*) FROM Salesman
+        ) >= 6
+    BEGIN
+        RAISERROR('Добавление нового продавца запрещено! Превышено максимальное количество продавцов – 6!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Salesman (Surname, Name, Patronymic, DateEmploy, Gender, Salary)
+        SELECT Surname, Name, Patronymic, DateEmploy, Gender, Salary FROM inserted;
+    END
+END
+GO
+--II. Триггеры к базе данных «Музыкальная коллекция»
+-- 1. Триггер не позволяющий добавить уже существующий в коллекции альбом.
+CREATE TRIGGER CheckExistingAlbum
+ON Disk
+FOR INSERT
+AS
+BEGIN
+    IF EXISTS(SELECT *
+              FROM Disk c
+              JOIN inserted i ON c.NameDisk = i.NameDisk)
+    BEGIN
+        RAISERROR('Альбом уже есть в коллекции!', 16, 1)
+        ROLLBACK TRANSACTION
+    END
+END
+GO
+-- 2. Триггер не позволяющий удалять диски группы The Beatles.
+CREATE TRIGGER PreventDeletingTheBeatles
+ON Disk
+INSTEAD OF DELETE
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM deleted WHERE SingerId IN (SELECT Id FROM Singer WHERE Singer = 'The Beatles'))
+    BEGIN
+        RAISERROR ('Удаление дисков The Beatles запрещено!', 16, 1)
+        ROLLBACK TRANSACTION
+    END
+    ELSE
+        DELETE FROM Disk WHERE Id IN (SELECT Id FROM deleted)
+END
+GO
+--3. При удалении диска триггер переносит информацию об удалённом диске в таблицу «Архив».
+CREATE TRIGGER MoveDiskToArchive
+ON Disk
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO Archive (DiskId, NameDisk, DateRelease, SingerId, StyleId, IssuerId)
+    SELECT d.Id, d.NameDisk, d.DateRelease, d.SingerId, d.StyleId, d.IssuerId
+    FROM deleted d
+END
+GO
+--4. Триггер не позволяющий добавлять в коллекцию диски музыкального стиля «Dark Power Pop».
+CREATE TRIGGER PreventAddingDarkPowerPopDisk
+ON Disk
+FOR INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM inserted WHERE StyleId IN (SELECT Id FROM Style WHERE Style = 'Dark Power Pop'))
+    BEGIN
+        RAISERROR ('Добавление дисков в стиле "Dark Power Pop" не допускается!', 16, 1)
+        ROLLBACK TRANSACTION
+    END
+END
+GO
+III. Триггеры к базе данных «Продажи»
+-- 1. При добавлении нового покупателя триггер проверяет наличие покупателей с такой же фамилией. При нахождении совпадения триггер записывает об этом информацию в специальную таблицу.
+CREATE TRIGGER CheckDuplicateBuyerSurname
+ON Buyer
+AFTER INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT Surname FROM inserted WHERE Surname IN (SELECT Surname FROM Buyer GROUP BY Surname HAVING COUNT(*) > 1))
+    BEGIN
+        INSERT INTO DuplicateBuyerSurname (DuplicateSurname, DateAdded)
+        SELECT Surname, GETDATE() FROM inserted
+    END
+END
+GO
+-- 2. При удалении информации о покупателе триггер переносит его историю покупок в таблицу «История покупок».
+CREATE TRIGGER MoveBuyerPurchaseHistory
+ON Buyer
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO PurchaseHistory (ProductName, Price, DateSale, SalesmanId, BuyerId)
+    SELECT s.ProductName, s.Price, s.DateSale, s.SalesmanId, d.Id
+    FROM Sale s
+    INNER JOIN deleted d ON s.BuyerId = d.Id
+END
+GO
+--3. При добавлении продавца триггер проверяет есть ли он в таблице покупателей, если запись существует добавление нового продавца отменяется.
+CREATE TRIGGER CheckSalesmanInBuyerTable
+ON Salesman
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT Email FROM inserted WHERE Email IN (SELECT Email FROM Buyer))
+        RAISERROR('Продавец не может быть покупателем!', 16, 1)
+        ROLLBACK TRANSACTION
+    ELSE
+        INSERT INTO Salesman (Surname, Name, Patronymic, Email, Telephone)
+        SELECT Surname, Name, Patronymic, Email, Telephone FROM inserted
+END
+GO
+--4. При добавлении покупателя триггер проверяет есть ли он в таблице продавцов, если запись существует добавление нового покупателя отменяется.
+CREATE TRIGGER CheckBuyerInSalesmanTable
+ON Buyer
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT Email FROM inserted WHERE Email IN (SELECT Email FROM Salesman))
+        RAISERROR('Покупатель не может быть продавцом!', 16, 1)
+        ROLLBACK TRANSACTION
+    ELSE
+        INSERT INTO Buyer (Surname, Name, Patronymic, Email, Telephone)
+        SELECT Surname, Name, Patronymic, Email, Telephone FROM inserted
+END
+GO
+--5. Триггер не позволяет вставлять информацию о продаже таких товаров: яблоки, груши, сливы, кинза.
+CREATE TRIGGER CheckForbiddenProducts
+ON Sale
+AFTER INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT ProductName FROM inserted WHERE ProductName IN ('яблоки', 'груши', 'сливы', 'кинза'))
+        RAISERROR('Невозможно добавить информацию о продаже следующих товаров – яблоки, груши, сливы или кинза!', 16, 1)
+        ROLLBACK TRANSACTION
+END
+GO
