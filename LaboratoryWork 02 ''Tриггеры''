@@ -1,0 +1,440 @@
+--I. База данных «Спортивный магазин»
+USE [master]
+GO
+/****** Object:  Database [SportShop] ******/
+CREATE DATABASE [SportShop]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'Sales', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Sales.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'Sales_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQLEXPRESS\MSSQL\DATA\Sales_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+GO
+ALTER DATABASE [SportShop] SET COMPATIBILITY_LEVEL = 130
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [SportShop].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [SportShop] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [SportShop] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [SportShop] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [SportShop] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [SportShop] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [SportShop] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [SportShop] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [SportShop] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [SportShop] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [SportShop] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [SportShop] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [SportShop] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [SportShop] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [SportShop] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [SportShop] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [SportShop] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [SportShop] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [SportShop] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [SportShop] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [SportShop] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [SportShop] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [SportShop] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [SportShop] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [SportShop] SET  MULTI_USER 
+GO
+ALTER DATABASE [SportShop] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [SportShop] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [SportShop] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [SportShop] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [SportShop] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [SportShop] SET QUERY_STORE = OFF
+GO
+USE [SportShop]
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET LEGACY_CARDINALITY_ESTIMATION = OFF;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET MAXDOP = 0;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET PARAMETER_SNIFFING = ON;
+GO
+ALTER DATABASE SCOPED CONFIGURATION SET QUERY_OPTIMIZER_HOTFIXES = OFF;
+GO
+USE [SportShop]
+GO
+/****** Object:  Table [dbo].[Archive] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Archive](
+	[ProductId] [int] IDENTITY(1,1) NOT NULL,
+	[ProductName] [nvarchar](max) NOT NULL,
+	[Type] [nvarchar](max) NOT NULL,
+	[ProductQuantity] [int] NOT NULL,
+	[СostPrice] [int] NOT NULL,
+	[Manufacturer] [nvarchar](max) NOT NULL,
+	[Price] [int] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Buyer] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Buyer](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Surname] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Patronymic] [nvarchar](max) NULL,
+	[Email] [nvarchar](max) NULL,
+	[Telephone] [nvarchar](max) NULL,
+	[Gender] [varchar](1) NOT NULL,
+	[HistoryOrders] [nvarchar](max) NULL,
+	[Discount] [int] NOT NULL,
+	[MailingList] [bit] NULL,
+ CONSTRAINT [PK_Buyer] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[History] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[History](
+	[SaleId] [int] IDENTITY(1,1) NOT NULL,
+	[Quantity] [int] NOT NULL,
+	[DateSale] [date] NOT NULL,
+	[ProductId] [int] NOT NULL,
+	[SalesmanId] [int] NOT NULL,
+	[BuyerId] [int] NOT NULL
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[LastUnit] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[LastUnit](
+	[ProductId] [int] IDENTITY(1,1) NOT NULL,
+	[ProductName] [nvarchar](max) NOT NULL,
+	[Type] [nvarchar](max) NOT NULL,
+	[ProductQuantity] [int] NOT NULL,
+	[СostPrice] [int] NOT NULL,
+	[Manufacturer] [nvarchar](max) NOT NULL,
+	[Price] [int] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Product] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Product](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ProductName] [nvarchar](max) NOT NULL,
+	[Type] [nvarchar](max) NOT NULL,
+	[ProductQuantity] [int] NOT NULL,
+	[СostPrice] [int] NOT NULL,
+	[Manufacturer] [nvarchar](max) NOT NULL,
+	[Price] [int] NOT NULL,
+ CONSTRAINT [PK_Product] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Sale] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Sale](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Quantity] [int] NOT NULL,
+	[DateSale] [date] NOT NULL,
+	[ProductId] [int] NOT NULL,
+	[SalesmanId] [int] NOT NULL,
+	[BuyerId] [int] NOT NULL,
+ CONSTRAINT [PK_Sale] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Salesman] ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Salesman](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Surname] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Patronymic] [nvarchar](max) NULL,
+	[DateEmploy] [date] NOT NULL,
+	[Gender] [varchar](1) NOT NULL,
+	[Salary] [int] NOT NULL,
+ CONSTRAINT [PK_Salesman] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Index [Email_Buyer] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Email_Buyer] ON [dbo].[Buyer]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Telephone_Buyer] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_Buyer] ON [dbo].[Buyer]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Email_Salesman] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Email_Salesman] ON [dbo].[Salesman]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+/****** Object:  Index [Telephone_Salesman] ******/
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_Salesman] ON [dbo].[Salesman]
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Buyer] FOREIGN KEY([BuyerId])
+REFERENCES [dbo].[Buyer] ([Id])
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Buyer]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Product] FOREIGN KEY([SalesmanId])
+REFERENCES [dbo].[Product] ([Id])
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Product]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [FK_Sale_Salesman] FOREIGN KEY([SalesmanId])
+REFERENCES [dbo].[Salesman] ([Id])
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [FK_Sale_Salesman]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Discount_Buyer] CHECK  (([Discount]>=(0)))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Discount_Buyer]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Gender_Buyer] CHECK  (([Gender]='M' OR [Gender]='F'))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Gender_Buyer]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Name_Buyer] CHECK  (([Name]<>N''))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Name_Buyer]
+GO
+ALTER TABLE [dbo].[Buyer]  WITH CHECK ADD  CONSTRAINT [Surname_Buyer] CHECK  (([Surname]<>N''))
+GO
+ALTER TABLE [dbo].[Buyer] CHECK CONSTRAINT [Surname_Buyer]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [Manufacturer_Product] CHECK  (([Manufacturer]<>N''))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [Manufacturer_Product]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [Price_Product] CHECK  (([Price]>(0)))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [Price_Product]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [ProductName_Product] CHECK  (([ProductName]<>N''))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [ProductName_Product]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [ProductQuantity_Product] CHECK  (([ProductQuantity]>=(0)))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [ProductQuantity_Product]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [Type_Product] CHECK  (([Type]<>N''))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [Type_Product]
+GO
+ALTER TABLE [dbo].[Product]  WITH CHECK ADD  CONSTRAINT [СostPrice_Product] CHECK  (([СostPrice]>(0)))
+GO
+ALTER TABLE [dbo].[Product] CHECK CONSTRAINT [СostPrice_Product]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [DateSale_Sale] CHECK  (([DateSale]>='2023-01-01'))
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [DateSale_Sale]
+GO
+ALTER TABLE [dbo].[Sale]  WITH CHECK ADD  CONSTRAINT [Quantity_Sale] CHECK  (([Quantity]>(0)))
+GO
+ALTER TABLE [dbo].[Sale] CHECK CONSTRAINT [Quantity_Sale]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Gender_Salesman] CHECK  (([Gender]='M' OR [Gender]='F'))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Gender_Salesman]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Name_Salesman] CHECK  (([Name]<>N''))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Name_Salesman]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Salary_Salesman] CHECK  (([Salary]>(0)))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Salary_Salesman]
+GO
+ALTER TABLE [dbo].[Salesman]  WITH CHECK ADD  CONSTRAINT [Surname_Salesman] CHECK  (([Surname]<>N''))
+GO
+ALTER TABLE [dbo].[Salesman] CHECK CONSTRAINT [Surname_Salesman]
+GO
+USE [master]
+GO
+ALTER DATABASE [SportShop] SET  READ_WRITE 
+GO
+--II. Триггеры базы данных «Спортивный магазин»
+--1. При продаже товара, заносить информацию о продаже в таблицу «История». Таблица «История» используется для дубляжа информации о всех продажах.
+CREATE TRIGGER SaleInsertTrigger
+ON Sale
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO History (SaleId, Quantity, DateSale, ProductId, SalesmanId, BuyerId)
+    SELECT Id, Quantity, DateSale, ProductId, SalesmanId, BuyerId FROM inserted;
+END
+GO
+-- 2. Если после продажи товара не осталось ни одной единицы данного товара, необходимо перенести информацию о полностью проданном товаре в таблицу «Архив».
+CREATE TRIGGER ProductArchiveTrigger
+ON Product
+AFTER UPDATE
+AS
+BEGIN
+    INSERT INTO Archive (ProductId, ProductName, Type, СostPrice, Manufacturer, Price)
+    SELECT Id, ProductName, Type, СostPrice, Manufacturer, Price FROM deleted WHERE ProductQuantity = 0;
+END
+GO
+-- 3. Не позволять регистрировать уже существующего клиента. При вставке проверять наличие клиента по ФИО и email.
+CREATE TRIGGER ExistingBuyerTrigger
+ON Buyer
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Buyer b
+        INNER JOIN inserted i ON b.Surname = i.Surname AND b.Name = i.Name AND b.Email = i.Email
+    )
+    BEGIN
+        RAISERROR('Такой клиент уже существует!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Buyer (Surname, Name, Patronymic, Email, Telephone, Gender, HistoryOrders, Discount, MailingList)
+        SELECT Surname, Name, Patronymic, Email, Telephone, Gender, HistoryOrders, Discount, MailingList FROM inserted;
+    END
+END
+GO
+-- 4. Запретить удаление существующих клиентов.
+CREATE TRIGGER DeleteBuyerTrigger
+ON Buyer
+INSTEAD OF DELETE
+AS
+BEGIN
+    RAISERROR('Удаление клиентов запрещено!', 16, 1);
+    ROLLBACK TRANSACTION;
+END
+GO
+-- 5. Запретить удаление сотрудников, принятых на работу до 2015 года.
+CREATE TRIGGER DeleteSalesmanTrigger
+ON Salesman
+INSTEAD OF DELETE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM deleted WHERE DateEmploy < '2015-01-01'
+    )
+    BEGIN
+        RAISERROR('Удаление сотрудников, принятых до 2015 года, запрещено!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        DELETE FROM Salesman WHERE Id IN (SELECT Id FROM deleted);
+    END
+END
+GO
+-- 6. При новой покупке товара нужно проверять общую сумму покупок клиента. Если сумма превысила 50000 грн, необходимо установить процент скидки в 15%.
+CREATE TRIGGER SetDiscountTrigger
+ON Sale
+AFTER INSERT
+AS
+BEGIN
+    UPDATE Buyer
+    SET Discount = 15
+    WHERE Id IN (
+        SELECT BuyerId FROM (
+            SELECT BuyerId, SUM(Price * Quantity) AS TotalAmount FROM inserted
+            INNER JOIN Product p ON inserted.ProductId = p.Id
+            GROUP BY BuyerId
+        ) AS TotalSales
+        WHERE TotalAmount > 50000
+    );
+END
+GO
+-- 7. Запретить добавлять товар конкретной фирмы. Например, товар фирмы «Спорт, солнце и штанга».
+CREATE TRIGGER DisallowManufacturerTrigger
+ON Product
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Product p
+        INNER JOIN inserted i ON p.Manufacturer = i.Manufacturer
+        WHERE p.Manufacturer = 'Спорт, солнце и штанга'
+    )
+    BEGIN
+        RAISERROR('Добавление товара этой фирмы запрещено!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Product (ProductName, Type, ProductQuantity, СostPrice, Manufacturer, Price)
+        SELECT ProductName, Type, ProductQuantity, СostPrice, Manufacturer, Price FROM inserted;
+    END
+END
+GO
+-- 8. При продаже проверять количество товара в наличии. Если осталась одна единица товара, необходимо внести информацию об этом товаре в таблицу «Последняя Единица».
+CREATE TRIGGER LastUnitTrigger
+ON Product
+AFTER UPDATE
+AS
+BEGIN
+    INSERT INTO LastUnit (ProductId, ProductName, Type, СostPrice, Manufacturer, Price)
+    SELECT Id, ProductName, Type, СostPrice, Manufacturer, Price FROM inserted WHERE ProductQuantity = 1;
+END
+GO
