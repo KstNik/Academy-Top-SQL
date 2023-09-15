@@ -1,0 +1,195 @@
+--I. База данных «Барбершоп»
+use [master];
+go
+
+if db_id('Barbershop') is not null
+begin
+    drop database [Barbershop];
+end
+go
+
+create database [Barbershop];
+go
+
+use [Barbershop];
+go
+
+create table [Barber]
+(
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(50) not null check ([Name] <> N''),
+    [Surname] nvarchar(50) not null check ([Surname] <> N''),
+    [Patronymic] nvarchar(50) not null check ([Patronymic] <> N''),
+    [Gender] nvarchar(1) not null check ([Gender] = 'М' OR [Gender] = 'Ж'),
+    [Phone] nvarchar(15),
+    [Email] nvarchar(50),
+    [DateBirth] date not null check ([DateBirth] >= '1950-01-01'),
+    [DateEmployment] date not null check ([DateEmployment] >= '2000-01-01'),
+    [Position] nvarchar(20) not null check ([Position] = 'чиф-барбер' OR [Position] = 'синьор-барбер' OR [Position] = 'джуниор-барбер'),
+);
+go
+
+create table [Service]
+(
+    [Id] int not null identity(1, 1) primary key,
+    [ServiceName] nvarchar(250) not null check ([ServiceName] <> N''),
+    [Price] money not null check ([Price] > 0.0),
+    [Duration] int not null check ([Duration] > 0),
+     [BarberId] int not null,
+);
+go
+
+create table [Customer]
+(
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(50) not null check ([Name] <> N''),
+    [Surname] nvarchar(50) not null check ([Surname] <> N''),
+    [Patronymic] nvarchar(50) not null check ([Patronymic] <> N''),
+    [Phone] nvarchar(15),
+    [Email] nvarchar(50),
+);
+go
+
+create table [Schedule]
+(
+    [Id] int not null identity(1, 1) primary key,
+    [DateAvailability] datetime not null check ([DateAvailability] >= '2023-01-01'),
+    [BarberId] int not null,
+    [CustomerId] int not null,
+);
+go
+
+create table [Visit]
+(
+    [Id] int not null identity(1, 1) primary key,
+    [DateAvailability] datetime not null check ([DateAvailability] >= '2023-01-01'),
+    [TotalCost] money not null check ([TotalCost] > 0.0),
+    [Feedback] nvarchar(max),
+    [Rating] nvarchar(15) check ([Rating] = 'очень плохо' OR [Rating] = 'плохо' OR [Rating] = 'нормально' OR [Rating] = 'хорошо' OR[Rating] = 'великолепно'),
+    [BarberId] int not null,
+    [CustomerId] int not null,
+    [ServiceId] int not null,
+);
+go
+
+alter table [Service]
+add foreign key ([BarberId]) references [Barber]([Id]);
+go
+
+alter table [Schedule]
+add foreign key ([BarberId]) references [Barber]([Id]);
+go
+
+alter table [Schedule]
+add foreign key ([CustomerId]) references [Customer]([Id]);
+go
+
+alter table [Visit]
+add foreign key ([BarberId]) references [Barber]([Id]);
+go
+
+alter table [Visit]
+add foreign key ([CustomerId]) references [Customer]([Id]);
+go
+
+alter table [Visit]
+add foreign key ([ServiceId]) references [Service]([Id]);
+go
+--II. Реализация функциональности базы данных «Барбершоп»
+--1. Вернуть ФИО всех барберов салона.
+CREATE FUNCTION GetBarberFullNames()
+RETURNS TABLE
+AS
+RETURN(
+    SELECT Name, Surname, Patronymic
+    FROM Barber
+)
+-- 2. Вернуть информацию о всех синьор-барберах.
+CREATE FUNCTION GetSeniorBarbers()
+RETURNS TABLE
+AS
+RETURN(
+    SELECT *
+    FROM Barber
+    WHERE Position = 'синьор-барбер'
+)
+-- 3. Вернуть информацию о всех барберах, которые могут предоставить услугу традиционного бритья бороды.
+CREATE FUNCTION GetBarbersForTraditionalShave()
+RETURNS TABLE
+AS
+RETURN
+    SELECT *
+    FROM [Barber]
+    WHERE [Id] IN (SELECT [BarberId] FROM [Service] WHERE [ServiceName] = 'традиционное бритье бороды');
+-- 4. Вернуть информацию о всех барберах, которые могут предоставить конкретную услугу. Информация о требуемой услуге предоставляется в качестве параметра.
+CREATE PROCEDURE GetBarbersByService(
+    @serviceName NVARCHAR(250)
+)
+AS
+BEGIN
+    SELECT [Barber].*
+    FROM [Barber]
+    INNER JOIN [Service] ON [Barber].[Id] = [Service].[BarberId]
+    WHERE [Service].[ServiceName] = serviceName;
+END
+-- 5. Вернуть информацию о всех барберах, которые работают свыше указанного количества лет. Количество лет передаётся в качестве параметра.
+CREATE FUNCTION GetBarbersByExperience(
+@years INT
+)
+RETURNS TABLE
+AS
+RETURN(
+    SELECT *
+    FROM [Barber]
+    WHERE DATEDIFF(yy, [DateEmployment], GETDATE()) > @years
+)
+-- 6. Вернуть количество синьор-барберов и количество джуниор-барберов.
+CREATE PROCEDURE GetSeniorJuniorBarberCount
+AS
+BEGIN
+    SELECT 
+        (SELECT COUNT(*) FROM [Barber] WHERE [Position] = 'синьор-барбер') AS [SeniorBarberCount],
+        (SELECT COUNT(*) FROM [Barber] WHERE [Position] = 'джуниор-барбер') AS [JuniorBarberCount];
+END
+-- 7. Вернуть информацию о постоянных клиентах. Критерий постоянного клиента: был в салоне заданное количество раз. Количество передаётся в качестве параметра.
+CREATE PROCEDURE GetFrequentCustomers(
+    @visitCount INT
+)
+AS
+BEGIN
+    SELECT [Customer].*
+    FROM [Customer]
+    INNER JOIN (
+        SELECT [CustomerId], COUNT(*) AS [VisitCount]
+        FROM [Visit]
+        GROUP BY [CustomerId]
+    ) AS [Visits] ON [Customer].[Id] = [Visits].[CustomerId]
+    WHERE [Visits].[VisitCount] >= @visitCount;
+END
+-- 8. Запретить возможность удаления информации о чиф-барбере, если не добавлен второй чиф-барбер.
+CREATE TRIGGER PreventDeletionOfChiefBarber
+ON [Barber]
+FOR DELETE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM deleted WHERE Position = 'чиф-барбер')
+    BEGIN
+        IF NOT EXISTS (SELECT * FROM [Barber] WHERE Position = 'чиф-барбер' AND Id <> ALL (SELECT Id FROM deleted))
+        BEGIN
+            RAISERROR ('Удаление чиф-барбера запрещено, пока не добавлен второй чиф-барбер!', 16, 1)
+            ROLLBACK TRANSACTION
+        END
+    END
+END
+-- 9. Запретить добавлять барберов младше 21 года.
+CREATE TRIGGER PreventAddingUnderageBarbers
+ON [Barber]
+FOR INSERT
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM inserted WHERE DATEDIFF(YEAR, [DateBirth], GETDATE()) < 21)
+    BEGIN
+        RAISERROR ('Добавление барберов младше 21 года запрещено!', 16, 1)
+        ROLLBACK TRANSACTION
+    END
+END
