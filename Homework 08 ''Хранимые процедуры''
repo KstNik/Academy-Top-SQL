@@ -1,0 +1,174 @@
+--I. Хранимые процедуры к базе данных «Спортивный магазин»
+-- 1. Хранимая процедура отображает полную информацию о всех товарах.
+CREATE PROCEDURE GetAllProducts
+AS
+BEGIN
+    SELECT *
+    FROM Product;
+END
+-- 2. Хранимая процедура показывает полную информацию о товаре конкретного вида. Вид товара передаётся в качестве параметра. Например, если в качестве параметра указана обувь, нужно показать всю обувь, которая есть в наличии.
+CREATE PROCEDURE GetProductsByType
+    @Type varchar(max)
+AS
+BEGIN
+    SELECT *
+    FROM Product
+    WHERE Type = @Type;
+END
+--3. Хранимая процедура показывает топ-3 самых старых клиентов. Топ-3 определяется по дате регистрации.
+CREATE PROCEDURE GetOldestCustomers
+AS
+BEGIN
+    SELECT TOP 3 *
+    FROM Buyer
+    ORDER BY DateRegistered ASC;
+END
+--4. Хранимая процедура показывает информацию о самом успешном продавце. Успешность определяется по общей сумме продаж за всё время.
+CREATE PROCEDURE GetMostSuccessfulSalesperson
+AS
+BEGIN
+    SELECT TOP 1 Salesman.Id, Salesman.Name, Sum(Sale.Quantity) as TotalQuantity
+    FROM Salesman
+    INNER JOIN Sale ON Salesman.Id = Sale.SalesmanId
+    GROUP BY Salesman.Id, Salesman.Name
+    ORDER BY TotalQuantity DESC;
+END
+--5. Хранимая процедура проверяет есть ли хоть один товар указанного производителя в наличии. Название производителя передаётся в качестве параметра. По итогам работы хранимая процедура должна вернуть yes в том случае, если товар есть, и no, если товара нет.
+CREATE PROCEDURE CheckProductByManufacturer(
+    @Manufacturer varchar(max),
+    @Result varchar(3) OUTPUT
+)
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM Product WHERE Manufacturer = @Manufacturer)
+        SET @Result = 'yes';
+    ELSE
+        SET @Result = 'no';
+END
+--6. Хранимая процедура отображает информацию о самом популярном производителе среди покупателей. Популярность среди покупателей определяется по общей сумме продаж.
+CREATE PROCEDURE GetMostPopularManufacturer
+AS
+BEGIN
+    SELECT TOP 1 Product.Manufacturer, SUM(Sale.Quantity) AS TotalQuantity
+    FROM Sale
+    INNER JOIN Product ON Sale.ProductId = Product.Id
+    GROUP BY Product.Manufacturer
+    ORDER BY TotalQuantity DESC;
+END
+--7. Хранимая процедура удаляет всех клиентов, зарегистрированных после указанной даты. Дата передаётся в качестве параметра. Процедура возвращает количество удалённых записей.
+CREATE PROCEDURE DeleteCustomersAfterDate
+    @DateRegistered date,
+    @DeletedCount int OUTPUT
+AS
+BEGIN
+    DELETE FROM Buyer
+    WHERE DateRegistered > @DateRegistered;
+    SET @DeletedCount = @@ROWCOUNT;
+END
+--II. Хранимые процедуры к базе данных «Музыкальная коллекция»
+-- 1. Хранимая процедура показывает полную информацию о музыкальных дисках.
+CREATE PROCEDURE GetFullDiskInformation
+AS
+BEGIN
+    SELECT d.Id, d.NameDisk, d.DateRelease, s.Singer, st.Style, i.NameIssuer, i.Country
+    FROM Disk d
+    INNER JOIN Singer s ON d.SingerId = s.Id
+    INNER JOIN Style st ON d.StyleId = st.Id
+    INNER JOIN Issuer i ON d.IssuerId = i.Id
+END
+-- 2. Хранимая процедура показывает полную информацию о всех музыкальных дисках конкретного издателя. Название издателя передаётся в качестве параметра.
+CREATE PROCEDURE GetDiskInformationByIssuer
+    @IssuerName NVARCHAR(MAX)
+AS
+BEGIN
+    SELECT d.Id, d.NameDisk, d.DateRelease, s.Singer, st.Style, i.NameIssuer, i.Country
+    FROM Disk d
+    INNER JOIN Singer s ON d.SingerId = s.Id
+    INNER JOIN Style st ON d.StyleId = st.Id
+    INNER JOIN Issuer i ON d.IssuerId = i.Id
+    WHERE i.NameIssuer = @IssuerName
+END
+--3. Хранимая процедура показывает название самого популярного стиля. Популярность стиля определяется по количеству дисков в коллекции.
+CREATE PROCEDURE GetMostPopularStyle
+AS
+BEGIN
+    SELECT TOP 1 Style
+    FROM Style
+    INNER JOIN Disk ON Disk.StyleId = Style.Id
+    GROUP BY Style
+    ORDER BY COUNT(Disk) DESC
+END
+--4. Хранимая процедура отображает информацию о диске конкретного стиля с наибольшим количеством песен. Название стиля передаётся в качестве параметра, если передано слово all, анализ идёт по всем стилям.
+CREATE OR ALTER PROCEDURE GetDiskInfoByStyle
+    @Style NVARCHAR(50)
+AS
+BEGIN
+    IF @Style = 'all'
+    BEGIN
+        SELECT TOP 1 d.NameDisk, s.Singer, sty.Style, COUNT(*) AS NumOfSongs
+        FROM Disk d
+        INNER JOIN Song so ON d.Id = so.DiskId
+        INNER JOIN Singer s ON d.SingerId = s.Id
+        INNER JOIN Style sty ON d.StyleId = sty.Id
+        GROUP BY d.NameDisk, s.Singer, sty.Style
+        ORDER BY COUNT(*) DESC;
+    END
+    ELSE
+    BEGIN
+        SELECT TOP 1 d.NameDisk, s.Singer, sty.Style, COUNT(*) AS NumOfSongs
+        FROM Disk d
+        INNER JOIN Song so ON d.Id = so.DiskId
+        INNER JOIN Singer s ON d.SingerId = s.Id
+        INNER JOIN Style sty ON d.StyleId = sty.Id
+        WHERE sty.Style = @Style
+        GROUP BY d.NameDisk, s.Singer, sty.Style
+        ORDER BY COUNT(*) DESC;
+    END
+END
+--5. Хранимая процедура удаляет все диски заданного стиля. Название стиля передаётся в качестве параметра. Процедура возвращает количество удалённых альбомов.
+CREATE PROCEDURE DeleteDisksByStyle
+    @StyleName NVARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @Count INT
+    SET @Count = (
+        SELECT COUNT(*)
+        FROM Disk d
+        INNER JOIN Style st ON d.StyleId = st.Id
+        WHERE st.Style = @StyleName
+    )
+    DELETE FROM Disk
+    WHERE Id IN (
+        SELECT d.Id
+        FROM Disk d
+        INNER JOIN Style st ON d.StyleId = st.Id
+        WHERE st.Style = @StyleName
+    )
+    SELECT @Count AS NumberOfDeletedDisks
+END
+--6. Хранимая процедура отображает информацию о самом «старом» альбом и самом «молодом». Старость и молодость определяются по дате выпуска.
+CREATE PROCEDURE GetOldestAndNewestDisk
+AS
+BEGIN
+    SELECT TOP 1 WITH TIES d.Id, d.NameDisk, d.DateRelease, s.Singer, st.Style, i.NameIssuer, i.Country
+    FROM Disk d
+    INNER JOIN Singer s ON d.SingerId = s.Id
+    INNER JOIN Style st ON d.StyleId = st.Id
+    INNER JOIN Issuer i ON d.IssuerId = i.Id
+    ORDER BY ROW_NUMBER() OVER (PARTITION BY d.DateRelease ORDER BY d.DateRelease) ASC
+END
+--7. Хранимая процедура удаляет все диски в названии которых есть заданное слово. Слово передаётся в качестве параметра. Процедура возвращает количество удалённых альбомов.
+CREATE PROCEDURE DeleteDisksByWord
+    @Word NVARCHAR(MAX)
+AS
+BEGIN
+    DECLARE @Count INT
+    SET @Count = (
+        SELECT COUNT(*)
+        FROM Disk
+        WHERE NameDisk LIKE '%' + @Word + '%'
+    )
+    DELETE FROM Disk
+    WHERE NameDisk LIKE '%' + @Word + '%'
+    SELECT @Count AS NumberOfDeletedDisks
+END
