@@ -1,0 +1,196 @@
+--I. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
+-- 1. Вернуть информацию о барбере, который работает в барбершопе дольше всех.
+CREATE PROCEDURE LongestWorkingBarber
+AS
+BEGIN
+    SELECT TOP 1 *
+    FROM Barber
+    ORDER BY DateEmployment ASC;
+END
+-- 2. Вернуть информацию о барбере, который обслужил максимальное количество клиентов в указанном диапазоне дат. Даты передаются в качестве параметра.
+CREATE PROCEDURE BarberWithMostClientsInRange
+    @StartDate date,
+    @EndDate date
+AS
+BEGIN
+    SELECT TOP 1 b.*
+    FROM Barber b
+    INNER JOIN Visit v ON b.Id = v.BarberId
+    WHERE v.DateAvailability BETWEEN @StartDate AND @EndDate
+    GROUP BY b.Id, b.Name, b.Surname, b.Patronymic, b.Gender, b.Phone, b.Email, b.DateBirth, b.DateEmployment, b.Position
+    ORDER BY COUNT(*) DESC;
+END
+--3. Вернуть информацию о клиенте, который посетил барбершоп максимальное количество раз.
+CREATE PROCEDURE CustomerWithMostVisits
+AS
+BEGIN
+    SELECT TOP 1 c.*
+    FROM Customer c
+    INNER JOIN Visit v ON c.Id = v.CustomerId
+    GROUP BY c.Id, c.Name, c.Surname, c.Patronymic, c.Phone, c.Email
+    ORDER BY COUNT(*) DESC;
+END
+--4. Вернуть информацию о клиенте, который потратил в барбершопе максимальное количество денег.
+CREATE PROCEDURE CustomerWithHighestSpending
+AS
+BEGIN
+    SELECT TOP 1 c.*
+    FROM Customer c
+    INNER JOIN Visit v ON c.Id = v.CustomerId
+    GROUP BY c.Id, c.Name, c.Surname, c.Patronymic, c.Phone, c.Email
+    ORDER BY SUM(v.TotalCost) DESC;
+END
+--5. Вернуть информацию о самой длинной по времени услуге в барбершопе.
+CREATE PROCEDURE LongestDurationService
+AS
+BEGIN
+    SELECT TOP 1 *
+    FROM Service
+    ORDER BY Duration DESC;
+END
+--II. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
+-- 1. Вернуть информацию о самом популярном барбере (по количеству клиентов).
+CREATE PROCEDURE GetMostPopularBarber
+AS
+BEGIN
+    SELECT TOP 1 Name, Surname, Patronymic, COUNT(*) AS ClientCount
+    FROM Barber
+    JOIN Visit ON Barber.Id = Visit.BarberId
+    GROUP BY Name, Surname, Patronymic
+    ORDER BY ClientCount DESC;
+END
+-- 2. Вернуть топ-3 барберов за месяц (по сумме денег, потраченной клиентами).
+CREATE PROCEDURE GetTop3BarbersByMonth
+AS
+BEGIN
+    SELECT TOP 3 Name, Surname, Patronymic, SUM(Visit.TotalCost) AS TotalCost
+    FROM Barber
+    JOIN Visit on Barber.Id = Visit.BarberId
+    WHERE MONTH(DateAvailability) = MONTH(GETDATE())
+    GROUP BY Name, Surname, Patronymic
+    ORDER BY TotalCost DESC;
+END
+--3. Вернуть топ-3 барберов за всё время (по средней оценке). Количество посещений клиентов не меньше 30.
+CREATE PROCEDURE GetTopBarbers
+AS
+BEGIN
+    SELECT TOP 3 Name, Surname, Patronymic
+    FROM Barber
+    INNER JOIN (
+        SELECT Visit.BarberId, AVG(CAST(CASE Visit.Rating
+                WHEN 'очень плохо' then 1
+                WHEN 'плохо' then 2
+                WHEN 'нормально' then 3
+                WHEN 'хорошо' then 4
+                WHEN 'великолепно' then 5
+            END AS float)) AS AvgRating, COUNT(Visit.CustomerId) AS VisitCount
+        FROM Visit
+        GROUP BY Visit.BarberId
+        HAVING COUNT(Visit.CustomerId) >= 30
+    ) Temp
+    ON Barber.Id = Temp.BarberId
+    ORDER BY Temp.AvgRating DESC;
+END
+--4. Показать расписание на день конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
+CREATE FUNCTION GetScheduleByBarberAndDate (
+    @BarberId int, 
+    @DateAvailability date
+)
+RETURNS TABLE
+AS
+RETURN (
+    SELECT *
+    FROM Schedule
+    WHERE BarberId = @BarberId
+    AND CAST(DateAvailability as date) = @DateAvailability
+)
+--5. Показать свободные временные слоты на неделю конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
+CREATE FUNCTION GetFreeTimeSlotsByBarberAndDate (
+    @BarberId int, 
+    @DateAvailability date
+)
+RETURNS TABLE
+AS
+RETURN (
+    SELECt *
+    FROM Schedule
+    WHERE BarberId = @BarberId
+    AND CAST(DateAvailability as date) BETWEEN @DateAvailability
+	AND DATEADD(day, 7, @DateAvailability)
+    AND CustomerId is null
+)
+--6. Перенести в архив информацию о всех уже завершённых услугах (это те услуги, которые произошли в прошлом).
+CREATE PROCEDURE MoveCompletedVisitsToArchive
+AS
+BEGIN
+    INSERT INTO ArchiveVisit (Id, DateAvailability, TotalCost, Feedback, Rating, BarberId, CustomerId, ServiceId)
+    SELECT Id, DateAvailability, TotalCost, Feedback, Rating, BarberId, CustomerId, ServiceId
+    FROM Visit
+    WHERE DateAvailability < DATEADD(day, -1, GETDATE())
+    DELETE FROM Visit
+    WHERE DateAvailability < DATEADD(day, -1, GETDATE())
+END
+--7. Запретить записывать клиента к барберу на уже занятое время и дату.
+CREATE TRIGGER PreventDoubleBooking
+ON Schedule
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM Schedule
+        JOIN Inserted ON Schedule.DateAvailability = Schedule.DateAvailability AND Schedule.BarberId = Inserted.BarberId
+    )
+    BEGIN
+        ROLLBACK TRANSACTION;
+        RAISERROR ('Этот временной интервал уже забронирован для выбранного парикмахера!', 16, 1);
+        RETURN;
+    END
+    INSERT INTO Schedule (DateAvailability, BarberId, CustomerId)
+    SELECT DateAvailability, BarberId, CustomerId
+    FROM Inserted;
+END
+--8. Запретить добавление нового джуниор-барбера, если в салоне уже работают 5 джуниор-барберов.
+CREATE TRIGGER PreventAddingJuniorBarber
+ON Barber
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF (
+        SELECT COUNT(*)
+        FROM Barber
+        WHERE Position = 'джуниор-барбер'
+    ) >= 5
+    BEGIN
+        ROLLBACK TRANSACTION;
+        RAISERROR ('Достигнут максимальный лимит джуниор-барберов!', 16, 1);
+        RETURN;
+    END
+    INSERT INTO Barber (Name, Surname, Patronymic, Gender, Phone, Email, DateBirth, DateEmployment, Position)
+    SELECT Name, Surname, Patronymic, Gender, Phone, Email, DateBirth, DateEmployment, Position
+    FROM Inserted;
+END
+--9. Вернуть информацию о клиентах, которые не поставили ни одного фидбека и ни одной оценки.
+CREATE PROCEDURE GetCustomersWithoutFeedbackAndRating
+AS
+BEGIN
+    SELECT *
+    FROM Customer
+    WHERE Id NOT IN (
+        SELECt distinct CustomerId
+        FROM Visit
+        WHERE Feedback is not null or Rating is not null
+    )
+END
+--10. Вернуть информацию о клиентах, которые не посещали барбершоп свыше одного года.
+CREATE PROCEDURE GetCustomersInactiveForYear
+AS
+BEGIN
+    SELECT *
+    FROM Customer
+    WHERE Id IN (
+        SELECT DISTINCT CustomerId
+        FROM Visit
+        WHERE DateAvailability < DATEADD(year, -1, GETDATE())
+    )
+END
