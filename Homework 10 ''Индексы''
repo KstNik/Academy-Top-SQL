@@ -1,0 +1,33 @@
+-- Индексы для базы данных «Спортивный магазин»
+--1. Кластеризованные.
+-- Созданы, являются первичными ключами таблиц
+CREATE CLUSTERED INDEX [IX_Salesman_Id] ON [dbo].[Salesman]([Id])
+CREATE CLUSTERED INDEX [IX_Buyer_Id] ON [dbo].[Buyer]([Id])
+CREATE CLUSTERED INDEX [IX_Product_Id] ON [dbo].[ Product]([Id])
+CREATE CLUSTERED INDEX [IX_Sale_Id] ON [dbo].[Sale]([Id])
+-- 2. Некластеризованные.
+-- Созданы, обеспечивают уникальность значений столбцов
+CREATE UNIQUE NONCLUSTERED INDEX [Email_ Buyer] ON [dbo].[ Buyer] ([Id] ASC)
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_ Buyer] ON [dbo].[ Buyer] ([Id] ASC)
+-- 3. Композитные.
+-- В создании нет необходимости
+-- 4. С включёнными столбцами.
+-- В создании нет необходимости
+-- 5. Отфильтрованные индексы.
+-- В создании нет необходимости
+-- Индексы для базы данных «Музыкальная коллекция»
+--1. Кластеризованные.
+-- Созданы, являются первичными ключами таблиц
+CREATE CLUSTERED INDEX [IX_Issuer_Id] ON [dbo].[Issuer]([Id])
+CREATE CLUSTERED INDEX [IX_Singer_Id] ON [dbo].[Singer]([Id])
+CREATE CLUSTERED INDEX [IX_Style_Id] ON [dbo].[Style]([Id])
+CREATE CLUSTERED INDEX [IX_Song_Id] ON [dbo].[Song]([Id])
+CREATE CLUSTERED INDEX [IX_Disk_Id] ON [dbo].[Disk]([Id])
+-- 2. Некластеризованные.
+-- В создании нет необходимости
+-- 3. Композитные.
+-- В создании нет необходимости
+-- 4. С включёнными столбцами.
+-- В создании нет необходимости
+-- 5. Отфильтрованные индексы.
+-- В создании нет необходимости
