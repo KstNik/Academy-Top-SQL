@@ -1,0 +1,18 @@
+-- Индексы для базы данных «Продажи»
+--1. Кластеризованные.
+-- Созданы, являются ключами таблиц
+CREATE CLUSTERED INDEX [IX_Salesman_Id] ON [dbo].[Salesman]([Id])
+CREATE CLUSTERED INDEX [IX_Buyer_Id] ON [dbo].[Buyer]([Id])
+CREATE CLUSTERED INDEX [IX_Sale_Id] ON [dbo].[Sale]([Id])
+-- 2. Некластеризованные.
+-- Созданы, обеспечивают уникальность значений столбцов
+CREATE UNIQUE NONCLUSTERED INDEX [Email_Salesman] ON [dbo].[Salesman] ([Id] ASC)
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_Salesman] ON [dbo].[Salesman] ([Id] ASC)
+CREATE UNIQUE NONCLUSTERED INDEX [Email_ Buyer] ON [dbo].[ Buyer] ([Id] ASC)
+CREATE UNIQUE NONCLUSTERED INDEX [Telephone_ Buyer] ON [dbo].[ Buyer] ([Id] ASC)
+-- 3. Композитные.
+-- В создании нет необходимости
+-- 4. С включёнными столбцами.
+-- В создании нет необходимости
+-- 5. Отфильтрованные индексы.
+-- В создании нет необходимости
