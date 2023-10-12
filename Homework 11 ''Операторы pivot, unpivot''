@@ -1,0 +1,81 @@
+--I. База данных «Музыкальная коллекция»
+--1. Используйте оператор PIVOT:
+-- 1). Отобразите информацию об исполнителях и стилях его музыкальных альбомов. Результат должен быть представлен такими столбцами: Исполнитель, Названия стилей (количество столбцов зависит от количества стилей). В столбце Исполнитель должны быть названия исполнителей. В столбцах стилей в качестве значения должно быть количество альбомов исполнителя в том или ином стиле, если альбома в таком стиле нет в столбце будет NULL-значение
+SELECT Singer, [Rock], [Pop], [Hip Hop], [Country]
+FROM (
+    SELECT s.Singer, st.Style
+    FROM Singer s
+    INNER JOIN Disk d ON s.Id = d.SingerId
+    INNER JOIN Style st ON d.StyleId = st.Id
+) AS SourceTable
+PIVOT (
+    COUNT(Style)
+    FOR Style IN ([Rock], [Pop], [Hip Hop], [Country])
+) AS PivotTable
+-- 2). Отобразите информацию об издателях и стилях изданных музыкальных альбомов. Результат должен быть представлен такими столбцами: Стиль, Названия издателей (количество столбцов зависит от количества издателей). В столбце Стиль должны быть названия стилей. В столбцах издателей в качестве значения должно быть количество альбомов издателя в том или ином стиле, если альбома в таком стиле нет у издателя в столбце будет NULL-значение
+SELECT Style, [Sony Music], [Universal Music], [Warner Music]
+FROM (
+    SELECT st.Style, i.NameIssuer
+    FROM Disk d
+    INNER JOIN Style st ON d.StyleId = st.Id
+    INNER JOIN Issuer i ON d.IssuerId = i.Id
+) AS SourceTable
+PIVOT (
+    COUNT(NameIssuer)
+    FOR NameIssuer IN ([Sony Music], [Universal Music], [Warner Music])
+) AS PivotTable;
+--2. Используйте оператор UNPIVOT по отношению к результатам, полученным в первом задании:
+-- 1). Отобразите информацию об исполнителях и стилях его музыкальных альбомов. Результат должен быть представлен такими столбцами: Исполнитель, Стиль, Количество альбомов. В столбце Исполнитель должны быть названия исполнителей. В столбце Стиль названия стилей. В столбце Количество альбомов количество альбомов исполнителя в конкретном стиле
+SELECT Singer, Style, AlbumCount
+FROM (
+    SELECT s.Singer, st.Style
+    FROM Singer s
+    INNER JOIN Disk d ON s.Id = d.SingerId
+    INNER JOIN Style st ON d.StyleId = st.Id
+) AS SourceTable
+PIVOT (
+    COUNT(Style)
+    FOR Style IN ([Rock], [Pop], [Hip Hop], [Country])
+) AS PivotTable
+UNPIVOT (
+   AlbumCount FOR Style IN ([Rock], [Pop], [Hip Hop], [Country])
+) AS UnpivotTable
+-- 2). Отобразите информацию об издателях и стилях его музыкальных альбомов. Результат должен быть представлен такими столбцами: Издатель, Стиль, Количество альбомов. В столбце Издатель должны быть названия издателей. В столбце Стиль названия стилей. В столбце Количество альбомов количество альбомов издателя в конкретном стиле
+SELECT NameIssuer, Style, AlbumCount
+FROM (
+    SELECT st.Style, i.NameIssuer
+    FROM Disk d
+    INNER JOIN Style st ON d.StyleId = st.Id
+    INNER JOIN Issuer i ON d.IssuerId = i.Id
+) AS SourceTable
+PIVOT (
+    COUNT(NameIssuer)
+    FOR NameIssuer IN ([Sony Music], [Universal Music], [Warner Music])
+) AS PivotTable
+UNPIVOT (
+   AlbumCount FOR NameIssuer IN ([Sony Music], [Universal Music], [Warner Music])
+) AS UnpivotTable
+--II. База данных «Спортивный магазин»
+--1. Используйте оператор PIVOT:
+-- 1). Отобразите информацию о производителях и видах товаров. Результат должен быть представлен таким столбцами: Производитель, Вид товаров (количество столбцов зависит от количества видов товаров). В столбце Производитель должны быть названия производителей. В столбцах вид товаров в качестве значения должно быть количество видов товаров в наличии этого конкретного производителя, если вида товара нет в наличии в столбце будет NULL-значение
+SELECT Manufacturer, [Type1], [Type2], [Type3]
+FROM (
+    SELECT p.Manufacturer, p.[Type], COUNT(*) AS Total
+    FROM Product p
+    GROUP BY p.Manufacturer, p.[Type]
+) AS SourceTable
+PIVOT (
+    SUM(Total)
+    FOR [Type] IN ([Type1], [Type2], [Type3])
+) AS PivotTable
+-- 2). Отобразите информацию о производителях и видах товаров. Результат должен быть представлен таким столбцами: Вид товара, Производитель (количество столбцов зависит от количества производителей). В столбце Вид товара должны быть названия товаров. В столбцах производителей в качестве значения должно быть количество единиц товара в наличии этого конкретного производителя, если вида товара у производителя нет в наличии в столбце будет NULL-значение
+SELECT [Type], [Manufacturer1], [Manufacturer2], [Manufacturer3]
+FROM (
+    SELECT p.[Type], p.Manufacturer, COUNT(*) AS Total
+    FROM Product p
+    GROUP BY p.[Type], p.Manufacturer
+) AS SourceTable
+PIVOT (
+    SUM(Total)
+    FOR Manufacturer IN ([Manufacturer1], [Manufacturer2], [Manufacturer3])
+) AS PivotTable
