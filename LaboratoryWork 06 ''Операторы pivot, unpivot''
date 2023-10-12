@@ -1,0 +1,91 @@
+--I. База данных «Телефонный справочник»
+--1. Используйте оператор PIVOT:
+-- 1). Отобразите информацию о количестве представителей разных полов в городах. Результат должен быть представлен такими столбцами: Город, Мужчина, Женщина, Другой. В столбце Город должны быть названия городов. В столбцах Мужчина, Женщина, Другой должна быть информация о количестве людей того или иного пола в городах
+SELECT City, [M] AS 'Man', [F] AS 'Woman', [O] AS 'Other'
+FROM (
+    SELECT City, Gender, COUNT(*) AS CountPeople
+    FROM People
+    GROUP BY City, Gender
+) AS SourceTable
+PIVOT (
+    SUM(CountPeople)
+    FOR Gender IN ([M], [F], [O])
+) AS PivotTable
+-- 2). Отобразите информацию о количестве представителей разных полов в странах. Результат должен быть представлен такими столбцами: Страна, Мужчина, Женщина, Другой. В столбце Страна должны быть названия стран. В столбцах Мужчина, Женщина, Другой должна быть информация о количестве людей того или иного пола в странах
+SELECT Country, [M] AS 'Man', [F] AS 'Woman', [O] AS 'Other'
+FROM (
+    SELECT Country, Gender, COUNT(*) AS CountPeople
+    FROM People
+    GROUP BY Country, Gender
+) AS SourceTable
+PIVOT (
+    SUM(CountPeople)
+    FOR Gender IN ([M], [F], [O])
+) AS PivotTable
+-- 3). Отобразите информацию о количестве представителей разных полов в странах. Результат должен быть представлен такими столбцами: Пол, Названия стран (количество столбцов зависит от количества стран). В столбце пол должны быть значения Мужчина, Женщина, Другой. В столбцах Стран должна быть информация о количестве людей того или иного пола в странах
+SELECT Gender, [Country1], [Country2], [Country3]
+FROM (
+    SELECT Gender, Country
+    FROM People
+) AS SourceTable
+PIVOT (
+    COUNT(Country)
+    FOR Country IN ([Country1], [Country2], [Country3])
+) AS PivotTable
+--2. Используйте оператор UNPIVOT по отношению к результатам, полученным в первом задании:
+-- 1). Отобразите информацию о количестве представителей разных полов в городах. Результат должен быть представлен такими столбцами: Город, Пол, Количество. В столбце Город должны быть названия городов, в столбце Пол информация о поле, в столбце Количество информация о количестве
+SELECT City, Gender, Quantity
+FROM (
+    SELECT City, Gender, COUNT(*) AS CountPeople
+    FROM People
+    GROUP BY City, Gender
+) AS SourceTable
+PIVOT (
+    SUM(CountPeople)
+    FOR Gender IN ([M], [F], [O])
+) AS PivotTable
+UNPIVOT(
+    Quantity FOR Gender IN ([M], [F], [O])
+) AS UnpivotTable
+-- 2). Отобразите информацию о количестве женщин и мужчин в странах. Результат должен быть представлен такими столбцами: Страна, Пол, Количество. В столбце Страна должны быть названия стран, в столбце Пол информация о поле, в столбце Количество информация о количестве
+SELECT Country, Gender, Quantity
+FROM (
+    SELECT Country, Gender, COUNT(*) AS CountPeople
+    FROM People
+    GROUP BY Country, Gender
+) AS SourceTable
+PIVOT (
+    SUM(CountPeople)
+    FOR Gender IN ([M], [F], [O])
+) AS PivotTable
+UNPIVOT(
+    Quantity FOR Gender IN ([M], [F], [O])
+) AS UnpivotTable
+--II. База данных «Продажи»
+--1. Используйте оператор PIVOT:
+-- 1). Отобразите информацию о покупателях, товарах, суммах. Результат должен быть представлен такими столбцами: Покупатель (в столбце ФИО покупателя), столбцы с названием существующих товаров. В качестве значения для столбца с товаром должна быть общая сумма затрат на товар (если товар не приобретался, в столбце значение NULL)
+SELECT *
+FROM (
+    SELECT b.Surname + ' ' + b.Name + ' ' + ISNULL(b.Patronymic, '') AS Buyer,
+           s.ProductName,
+           s.Price
+    FROM Sale s
+    JOIN Buyer b ON s.BuyerId = b.Id
+) AS SourceTable
+PIVOT (
+    SUM(Price)
+    FOR ProductName IN ([Product1], [Product2], [Product3])
+) AS PivotTable
+-- 2). Отобразите информацию о покупателях, товарах, суммах. Результат должен быть представлен такими столбцами: Товар (в столбце названия товаров), столбцы с ФИО покупателей. В качестве значения для столбца с ФИО покупателя должна быть общая сумма затрат на товар (если товар не приобретался, в столбце значение NULL)
+SELECT *
+FROM (
+    SELECT s.ProductName,
+           b.Surname + ' ' + b.Name + ' ' + ISNULL(b.Patronymic, '') AS Buyer,
+           s.Price
+    FROM Sale s
+    JOIN Buyer b ON s.BuyerId = b.Id
+) AS SourceTable
+PIVOT (
+    SUM(Price)
+    FOR Buyer IN ([Buyer1], [Buyer2], [Buyer3])
+) AS PivotTable
