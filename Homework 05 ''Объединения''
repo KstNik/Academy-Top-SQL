@@ -80,7 +80,7 @@ UNION
 SELECT Teachers.Name, Teachers.Surname, 5 AS Ind
 FROM Assistants LEFT JOIN Teachers ON Assistants.TeacherId=Teachers.Id) Sort
 ORDER BY Sort.Ind, Sort.Name, Sort.Surname
---9. Вывести дни недели (без повторений), в которые имеются занятия в аудиториях “A311” и “A104” корпуса 6.
+-- 9. Вывести дни недели (без повторений), в которые имеются занятия в аудиториях “A311” и “A104” корпуса 6.
 SELECT Schedules.DayOfWeek
 FROM Schedules, LectureRooms
 WHERE (LectureRooms.Name = 'A311'
