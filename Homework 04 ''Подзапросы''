@@ -65,13 +65,13 @@ WHERE Lectures.TeacherId = Teachers.Id
 AND Lectures.SubjectId = Subjects.Id
 GROUP BY Subjects.Name, Teachers.Name, Teachers.Surname
 ORDER BY COUNT(*) DESC
---9. Вывести название дисциплины, по которой читается меньше всего лекций.
+-- 9. Вывести название дисциплины, по которой читается меньше всего лекций.
 SELECT Subjects.Name, COUNT(*) AS NumberLectures
 FROM Subjects, Lectures
 WHERE Lectures.SubjectId = Subjects.Id
 GROUP BY Subjects.Name
 ORDER BY COUNT(*)
---10. Вывести количество студентов и читаемых дисциплин на кафедре “Software Development”.
+-- 10. Вывести количество студентов и читаемых дисциплин на кафедре “Software Development”.
 SELECT COUNT (*) AS NumberStudents
 FROM Students, GroupsStudents, Groups, Departments
 WHERE GroupsStudents.StudentId = Students.Id
