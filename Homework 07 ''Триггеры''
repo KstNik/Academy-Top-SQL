@@ -1,4 +1,4 @@
---I. Триггеры к базе данных «Спортивный магазин»
+-- I. Триггеры к базе данных «Спортивный магазин»
 -- 1. При добавлении нового товара триггер проверяет его наличие на складе, если такой товар есть и новые данные о товаре совпадают с уже существующими данными, вместо добавления происходит обновление информации о количестве товара.
 CREATE TRIGGER CheckProductAvailabilityTrigger
 ON Product
@@ -32,7 +32,7 @@ BEGIN
     SELECT Id, Surname, Name, Patronymic, DateEmploy, Gender, Salary GETDATE() FROM deleted;
 END
 GO
---3. Триггер запрещает добавлять нового продавца, если количество существующих продавцов больше 6.
+-- 3. Триггер запрещает добавлять нового продавца, если количество существующих продавцов больше 6.
 CREATE TRIGGER MaxSalesmanCountTrigger
 ON Salesman
 INSTEAD OF INSERT
@@ -52,7 +52,7 @@ BEGIN
     END
 END
 GO
---II. Триггеры к базе данных «Музыкальная коллекция»
+-- II. Триггеры к базе данных «Музыкальная коллекция»
 -- 1. Триггер не позволяющий добавить уже существующий в коллекции альбом.
 CREATE TRIGGER CheckExistingAlbum
 ON Disk
@@ -83,7 +83,7 @@ BEGIN
         DELETE FROM Disk WHERE Id IN (SELECT Id FROM deleted)
 END
 GO
---3. При удалении диска триггер переносит информацию об удалённом диске в таблицу «Архив».
+-- 3. При удалении диска триггер переносит информацию об удалённом диске в таблицу «Архив».
 CREATE TRIGGER MoveDiskToArchive
 ON Disk
 AFTER DELETE
@@ -94,7 +94,7 @@ BEGIN
     FROM deleted d
 END
 GO
---4. Триггер не позволяющий добавлять в коллекцию диски музыкального стиля «Dark Power Pop».
+-- 4. Триггер не позволяющий добавлять в коллекцию диски музыкального стиля «Dark Power Pop».
 CREATE TRIGGER PreventAddingDarkPowerPopDisk
 ON Disk
 FOR INSERT
@@ -107,7 +107,7 @@ BEGIN
     END
 END
 GO
-III. Триггеры к базе данных «Продажи»
+-- III. Триггеры к базе данных «Продажи»
 -- 1. При добавлении нового покупателя триггер проверяет наличие покупателей с такой же фамилией. При нахождении совпадения триггер записывает об этом информацию в специальную таблицу.
 CREATE TRIGGER CheckDuplicateBuyerSurname
 ON Buyer
@@ -133,7 +133,7 @@ BEGIN
     INNER JOIN deleted d ON s.BuyerId = d.Id
 END
 GO
---3. При добавлении продавца триггер проверяет есть ли он в таблице покупателей, если запись существует добавление нового продавца отменяется.
+-- 3. При добавлении продавца триггер проверяет есть ли он в таблице покупателей, если запись существует добавление нового продавца отменяется.
 CREATE TRIGGER CheckSalesmanInBuyerTable
 ON Salesman
 INSTEAD OF INSERT
@@ -147,7 +147,7 @@ BEGIN
         SELECT Surname, Name, Patronymic, Email, Telephone FROM inserted
 END
 GO
---4. При добавлении покупателя триггер проверяет есть ли он в таблице продавцов, если запись существует добавление нового покупателя отменяется.
+-- 4. При добавлении покупателя триггер проверяет есть ли он в таблице продавцов, если запись существует добавление нового покупателя отменяется.
 CREATE TRIGGER CheckBuyerInSalesmanTable
 ON Buyer
 INSTEAD OF INSERT
@@ -161,7 +161,7 @@ BEGIN
         SELECT Surname, Name, Patronymic, Email, Telephone FROM inserted
 END
 GO
---5. Триггер не позволяет вставлять информацию о продаже таких товаров: яблоки, груши, сливы, кинза.
+-- 5. Триггер не позволяет вставлять информацию о продаже таких товаров: яблоки, груши, сливы, кинза.
 CREATE TRIGGER CheckForbiddenProducts
 ON Sale
 AFTER INSERT
