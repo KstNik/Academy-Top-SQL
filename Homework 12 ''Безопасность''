@@ -1,4 +1,4 @@
---I. Настройка безопасности доступа к базе данных «Спортивный магазин»
+-- I. Настройка безопасности доступа к базе данных «Спортивный магазин»
 -- 1. Полный доступ к информации из базы данных «Спортивный магазин» имеет только директор и его заместитель.
 USE [SportShop]
 GRANT db_owner TO director
@@ -12,7 +12,7 @@ GRANT product_information TO seller1
 GRANT product_information TO seller2
 GRANT product_information TO seller3
 GO
---II. Настройка безопасности доступа к базе данных «Музыкальная коллекция»
+-- II. Настройка безопасности доступа к базе данных «Музыкальная коллекция»
 -- 1. Полный доступ к базе данных «Музыкальная коллекция» имеет только хозяин коллекции.
 USE [MusicCollection]
 GRANT db_owner TO master_collection
@@ -23,7 +23,7 @@ GRANT db_denydatawriter TO manager1
 GRANT db_denydatawriter TO manager2
 GRANT db_denydatawriter TO manager3
 GO
---3. Отдельно есть группа пользователей, которая имеет право получать информацию только из таблицы стилей
+-- 3. Отдельно есть группа пользователей, которая имеет право получать информацию только из таблицы стилей
 USE [MusicCollection]
 CREATE ROLE style_information
 GRANT SELECT ON Style TO style_information
