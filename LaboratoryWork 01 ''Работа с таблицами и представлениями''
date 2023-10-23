@@ -1,4 +1,4 @@
---I. База данных «Телефонный справочник»
+-- I. База данных «Телефонный справочник»
 USE [master]
  GO
 /****** Object:  Database [Phonebook] ******/
@@ -163,7 +163,7 @@ USE [master]
 GO
 ALTER DATABASE [Phonebook] SET  READ_WRITE 
 GO
---II. База данных «Продажи»
+-- II. База данных «Продажи»
 USE [master]
 GO
 /****** Object:  Database [Sales] ******/
@@ -373,7 +373,7 @@ USE [master]
 GO
 ALTER DATABASE [Sales] SET  READ_WRITE 
 GO
---III. База данных «Музыкальная коллекция»
+-- III. База данных «Музыкальная коллекция»
 USE [master]
 GO
 /****** Object:  Database [MusicCollection] ******/
@@ -608,8 +608,8 @@ USE [master]
 GO
 ALTER DATABASE [MusicCollection] SET  READ_WRITE 
 GO
---IV. Редактирование таблиц базы данных «Музыкальная коллекция»
---1. Добавьте к уже существующей таблице с информацией о музыкальном диске столбец с краткой рецензией на него.
+-- IV. Редактирование таблиц базы данных «Музыкальная коллекция»
+-- 1. Добавьте к уже существующей таблице с информацией о музыкальном диске столбец с краткой рецензией на него.
 ALTER TABLE Disk
 ADD Review NVARCHAR(MAX)
 -- 2. Добавьте к уже существующей таблице с информацией об издателе столбец с юридическим адресом главного офиса.
@@ -627,7 +627,7 @@ DROP FK_Disk_Singer
 -- 6. Добавьте связь между таблицами «музыкальных дисков» и «исполнителей».
 ALTER TABLE Disk
 ADD FOREIGN KEY (SingerId) REFERENCES Singer(Id)
---V. Создание представлений базы данных «Музыкальная коллекция»
+-- V. Создание представлений базы данных «Музыкальная коллекция»
 -- 1. Представление отображает названия всех стилей.
 CREATE VIEW ViewStyle
 AS SELECT Style
@@ -636,7 +636,7 @@ FROM Style
 CREATE VIEW ViewIssuer
 AS SELECT NameIssuer
 FROM Issuer
---3. Представление отображает полную информацию о диске: название диска, исполнитель, дата выпуска, стиль, издатель.
+-- 3. Представление отображает полную информацию о диске: название диска, исполнитель, дата выпуска, стиль, издатель.
 CREATE VIEW ViewDisk
 AS SELECT NameDisk, Singer, DateRelease, Style, NameIssuer
 FROM Disk INNER JOIN Singer ON Disk.SingerId = Singer.Id
