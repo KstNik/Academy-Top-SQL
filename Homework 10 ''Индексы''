@@ -1,5 +1,5 @@
 -- Индексы для базы данных «Спортивный магазин»
---1. Кластеризованные.
+-- 1. Кластеризованные.
 -- Созданы, являются первичными ключами таблиц
 CREATE CLUSTERED INDEX [IX_Salesman_Id] ON [dbo].[Salesman]([Id])
 CREATE CLUSTERED INDEX [IX_Buyer_Id] ON [dbo].[Buyer]([Id])
@@ -16,7 +16,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [Telephone_ Buyer] ON [dbo].[ Buyer] ([Id] ASC)
 -- 5. Отфильтрованные.
 -- В создании нет необходимости
 -- Индексы для базы данных «Музыкальная коллекция»
---1. Кластеризованные.
+-- 1. Кластеризованные.
 -- Созданы, являются первичными ключами таблиц
 CREATE CLUSTERED INDEX [IX_Issuer_Id] ON [dbo].[Issuer]([Id])
 CREATE CLUSTERED INDEX [IX_Singer_Id] ON [dbo].[Singer]([Id])
