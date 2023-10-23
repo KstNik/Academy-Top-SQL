@@ -34,30 +34,30 @@ FROM Teachers
 WHERE IsAssistant=1
 AND Premium >=160
 AND Premium<=550
---10. Вывести фамилии и ставки ассистентов.
+-- 10. Вывести фамилии и ставки ассистентов.
 SELECT Surname, Salary
 FROM Teachers
 WHERE IsAssistant=1
---11. Вывести фамилии и должности преподавателей, которые были приняты на работу до 01.01.2000.
+-- 11. Вывести фамилии и должности преподавателей, которые были приняты на работу до 01.01.2000.
 SELECT Surname, Position
 FROM Teachers
 WHERE EmploymentDate<'2000-01-01'
---12. Вывести названия кафедр, которые в алфавитном порядке располагаются до кафедры “Software Development”. Выводимое поле должно иметь название “Name of Department”.
+-- 12. Вывести названия кафедр, которые в алфавитном порядке располагаются до кафедры “Software Development”. Выводимое поле должно иметь название “Name of Department”.
 SELECT Name 'Name of Department'
 FROM Departments
 WHERE Name<'Software Development' order by Name asc
---13. Вывести фамилии ассистентов, имеющих зарплату (сумма ставки и надбавки) не более 1200.
+-- 13. Вывести фамилии ассистентов, имеющих зарплату (сумма ставки и надбавки) не более 1200.
 SELECT Surname
 FROM Teachers
 WHERE IsAssistant=1
 AND (Salary+Premium)<=1200
---14. Вывести названия групп 5-го курса, имеющих рейтинг в диапазоне от 2 до 4.
+-- 14. Вывести названия групп 5-го курса, имеющих рейтинг в диапазоне от 2 до 4.
 SELECT Name
 FROM Groups
 WHERE Year=5
 AND Rating>=2
 AND Rating<=4
---15. Вывести фамилии ассистентов со ставкой меньше 550 или надбавкой меньше 200.
+-- 15. Вывести фамилии ассистентов со ставкой меньше 550 или надбавкой меньше 200.
 SELECT Surname
 FROM Teachers 
 WHERE IsAssistant=1
