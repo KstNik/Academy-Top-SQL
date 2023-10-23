@@ -1,4 +1,4 @@
---I. База данных «Барбершоп»
+-- I. База данных «Барбершоп»
 use [master];
 go
 
@@ -95,8 +95,8 @@ go
 alter table [Visit]
 add foreign key ([ServiceId]) references [Service]([Id]);
 go
---II. Реализация функциональности базы данных «Барбершоп»
---1. Вернуть ФИО всех барберов салона.
+-- II. Реализация функциональности базы данных «Барбершоп»
+-- 1. Вернуть ФИО всех барберов салона.
 CREATE FUNCTION GetBarberFullNames()
 RETURNS TABLE
 AS
