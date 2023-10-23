@@ -54,13 +54,13 @@ FROM Groups, Departments, Faculties
 WHERE Faculties.Name = 'Computer Science'
 AND Groups.DepartmentId = Departments.Id
 AND Departments.FacultyId = Faculties.Id
---10. Вывести названия групп 5-го курса, а также название факультетов, к которым они относятся.
+-- 10. Вывести названия групп 5-го курса, а также название факультетов, к которым они относятся.
 SELECT Groups.Name, Faculties.Name
 FROM Groups, Departments, Faculties
 WHERE Groups.Year = 5
 AND Groups.DepartmentId = Departments.Id
 AND Departments.FacultyId = Faculties.Id
---11. Вывести полные имена преподавателей и лекции, которые они читают (названия дисциплин и групп), причём отобрать только те лекции, которые читаются в аудитории “B103”.
+-- 11. Вывести полные имена преподавателей и лекции, которые они читают (названия дисциплин и групп), причём отобрать только те лекции, которые читаются в аудитории “B103”.
 SELECT Teachers.Name +' '+ Teachers.Surname AS FullName, Subjects.Name, Groups.Name
 FROM Teachers, Subjects, Groups, GroupsLectures, Lectures
 WHERE Lectures.LectureRoom = 'B103'
