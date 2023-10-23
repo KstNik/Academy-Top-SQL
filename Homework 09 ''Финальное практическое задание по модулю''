@@ -1,4 +1,4 @@
---I. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
+-- I. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
 -- 1. Вернуть информацию о барбере, который работает в барбершопе дольше всех.
 CREATE PROCEDURE LongestWorkingBarber
 AS
@@ -20,7 +20,7 @@ BEGIN
     GROUP BY b.Id, b.Name, b.Surname, b.Patronymic, b.Gender, b.Phone, b.Email, b.DateBirth, b.DateEmployment, b.Position
     ORDER BY COUNT(*) DESC;
 END
---3. Вернуть информацию о клиенте, который посетил барбершоп максимальное количество раз.
+-- 3. Вернуть информацию о клиенте, который посетил барбершоп максимальное количество раз.
 CREATE PROCEDURE CustomerWithMostVisits
 AS
 BEGIN
@@ -30,7 +30,7 @@ BEGIN
     GROUP BY c.Id, c.Name, c.Surname, c.Patronymic, c.Phone, c.Email
     ORDER BY COUNT(*) DESC;
 END
---4. Вернуть информацию о клиенте, который потратил в барбершопе максимальное количество денег.
+-- 4. Вернуть информацию о клиенте, который потратил в барбершопе максимальное количество денег.
 CREATE PROCEDURE CustomerWithHighestSpending
 AS
 BEGIN
@@ -40,7 +40,7 @@ BEGIN
     GROUP BY c.Id, c.Name, c.Surname, c.Patronymic, c.Phone, c.Email
     ORDER BY SUM(v.TotalCost) DESC;
 END
---5. Вернуть информацию о самой длинной по времени услуге в барбершопе.
+-- 5. Вернуть информацию о самой длинной по времени услуге в барбершопе.
 CREATE PROCEDURE LongestDurationService
 AS
 BEGIN
@@ -48,7 +48,7 @@ BEGIN
     FROM Service
     ORDER BY Duration DESC;
 END
---II. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
+-- II. Триггеры, пользовательские функции, хранимые процедуры к базе данных «Барбершоп»
 -- 1. Вернуть информацию о самом популярном барбере (по количеству клиентов).
 CREATE PROCEDURE GetMostPopularBarber
 AS
@@ -70,7 +70,7 @@ BEGIN
     GROUP BY Name, Surname, Patronymic
     ORDER BY TotalCost DESC;
 END
---3. Вернуть топ-3 барберов за всё время (по средней оценке). Количество посещений клиентов не меньше 30.
+-- 3. Вернуть топ-3 барберов за всё время (по средней оценке). Количество посещений клиентов не меньше 30.
 CREATE PROCEDURE GetTopBarbers
 AS
 BEGIN
@@ -91,7 +91,7 @@ BEGIN
     ON Barber.Id = Temp.BarberId
     ORDER BY Temp.AvgRating DESC;
 END
---4. Показать расписание на день конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
+-- 4. Показать расписание на день конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
 CREATE FUNCTION GetScheduleByBarberAndDate (
     @BarberId int, 
     @DateAvailability date
@@ -104,7 +104,7 @@ RETURN (
     WHERE BarberId = @BarberId
     AND CAST(DateAvailability as date) = @DateAvailability
 )
---5. Показать свободные временные слоты на неделю конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
+-- 5. Показать свободные временные слоты на неделю конкретного барбера. Информация о барбере и дне передаётся в качестве параметра.
 CREATE FUNCTION GetFreeTimeSlotsByBarberAndDate (
     @BarberId int, 
     @DateAvailability date
@@ -119,7 +119,7 @@ RETURN (
 	AND DATEADD(day, 7, @DateAvailability)
     AND CustomerId is null
 )
---6. Перенести в архив информацию о всех уже завершённых услугах (это те услуги, которые произошли в прошлом).
+-- 6. Перенести в архив информацию о всех уже завершённых услугах (это те услуги, которые произошли в прошлом).
 CREATE PROCEDURE MoveCompletedVisitsToArchive
 AS
 BEGIN
@@ -130,7 +130,7 @@ BEGIN
     DELETE FROM Visit
     WHERE DateAvailability < DATEADD(day, -1, GETDATE())
 END
---7. Запретить записывать клиента к барберу на уже занятое время и дату.
+-- 7. Запретить записывать клиента к барберу на уже занятое время и дату.
 CREATE TRIGGER PreventDoubleBooking
 ON Schedule
 INSTEAD OF INSERT
@@ -150,7 +150,7 @@ BEGIN
     SELECT DateAvailability, BarberId, CustomerId
     FROM Inserted;
 END
---8. Запретить добавление нового джуниор-барбера, если в салоне уже работают 5 джуниор-барберов.
+-- 8. Запретить добавление нового джуниор-барбера, если в салоне уже работают 5 джуниор-барберов.
 CREATE TRIGGER PreventAddingJuniorBarber
 ON Barber
 INSTEAD OF INSERT
@@ -170,7 +170,7 @@ BEGIN
     SELECT Name, Surname, Patronymic, Gender, Phone, Email, DateBirth, DateEmployment, Position
     FROM Inserted;
 END
---9. Вернуть информацию о клиентах, которые не поставили ни одного фидбека и ни одной оценки.
+-- 9. Вернуть информацию о клиентах, которые не поставили ни одного фидбека и ни одной оценки.
 CREATE PROCEDURE GetCustomersWithoutFeedbackAndRating
 AS
 BEGIN
@@ -182,7 +182,7 @@ BEGIN
         WHERE Feedback is not null or Rating is not null
     )
 END
---10. Вернуть информацию о клиентах, которые не посещали барбершоп свыше одного года.
+-- 10. Вернуть информацию о клиентах, которые не посещали барбершоп свыше одного года.
 CREATE PROCEDURE GetCustomersInactiveForYear
 AS
 BEGIN
