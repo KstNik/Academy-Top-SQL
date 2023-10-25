@@ -1,0 +1,29 @@
+-- Резервное копирование и восстановление базы данных «Спортивный магазин»
+-- 1. Создайте полную (full backup) резервную копию.
+BACKUP DATABASE SportShop
+TO DISK = 'C:\Backup\SportShopFull.bak'
+-- 2. Выполните операции по вставке, обновлению, удалению данных в разных таблицах базы данных.
+INSERT INTO Salesman (Surname, Name, Patronymic, DateEmploy, Gender, Salary)
+VALUES ('Иванов', 'Иван', 'Иванович', '2023-08-01', 'M', 50000)
+-- 3. Создайте разностную (differential backup) резервную копию.
+BACKUP DATABASE SportShop
+TO DISK = 'C:\Backup\SportShopDiff.bak'
+WITH DIFFERENTIAL
+-- 4. Выполните операции по вставке, обновлению, удалению данных в разных таблицах базы данных.
+DELETE FROM Product
+WHERE Id = 1
+-- 5. Создайте резервную копию журнала транзакций (log backup).
+BACKUP LOG SportShop
+TO DISK = 'C:\Backup\SportShopLog.bak'
+-- 6. Проведите восстановление из полной резервной копии.
+RESTORE DATABASE SportShop
+FROM DISK = 'C:\Backup\SportShopFull.bak'
+WITH REPLACE
+-- 7. Проведите восстановление из разностной резервной копии.
+RESTORE DATABASE SportsShop
+FROM DISK = 'C:\Backup\SportsShopDiff.bak'
+WITH NORECOVERY
+-- 8. Проведите восстановление из резервной копии журнала транзакций.
+RESTORE LOG SportsShop
+FROM DISK = 'C:\Backup\SportsShopLog.bak'
+WITH NORECOVERY
