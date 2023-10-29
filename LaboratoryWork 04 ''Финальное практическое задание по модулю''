@@ -35,7 +35,7 @@ create table [Service]
     [ServiceName] nvarchar(250) not null check ([ServiceName] <> N''),
     [Price] money not null check ([Price] > 0.0),
     [Duration] int not null check ([Duration] > 0),
-     [BarberId] int not null,
+    [BarberId] int not null,
 );
 go
 
