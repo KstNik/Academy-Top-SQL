@@ -1,0 +1,414 @@
+-- I. База данных
+USE [master];
+GO
+IF db_id('Poster') is not null
+BEGIN
+    DROP DATABASE [Poster];
+END
+GO
+CREATE DATABASE [Poster];
+GO
+USE [Poster];
+GO
+CREATE TABLE [Event] (
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(250) not null check ([Name] <> N''),
+    [Category] nvarchar(25) not null check ([Category] = 'Спектакль' OR [Category] = 'Концерт' OR [Category] = 'Выставка' 
+        OR [Category] = 'Цирк' OR [Category] = 'Спорт' OR [Category] = 'Семинары и тренинги' OR [Category] = 'Кино' 
+        OR [Category] = 'Юмор' OR [Category] = 'Вечеринки' OR [Category] = 'Детям' OR [Category] = 'Другое')
+           DEFAULT 'другое',
+    [Image] image,
+    [Description] ntext,
+    [Age] int not null DEFAULT 0,
+    [LocationId] int not null,
+    [Date] date not null DEFAULT GETDATE(),
+    [Time] time not null DEFAULT '12:00',
+    [TicketsMax] int not null DEFAULT 1000,
+);
+GO
+CREATE TABLE [Location] (
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(250) not null check ([Name] <> N''),
+    [CityId] int not null,
+);
+GO
+CREATE TABLE [City] (
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(100) not null check ([Name] <> N''),
+    [CountryId] int not null,
+);
+GO
+CREATE TABLE [Country] (
+    [Id] int not null identity(1, 1) primary key,
+    [Name] nvarchar(100) not null check ([Name] <> N''),
+);
+GO
+CREATE TABLE [Client] (
+    [Id] int not null identity(1, 1) primary key,
+    [Surname] nvarchar(50) not null check ([Surname] <> N''),
+    [Name] nvarchar(50) not null check ([Name] <> N''),
+    [Patronymic] nvarchar(50) check ([Patronymic] <> N''),
+    [DateBirth] date not null check ([DateBirth] >= '1900-01-01'),
+    [EMail] nvarchar(50) not null unique,
+);
+GO
+CREATE TABLE [Ticket] (
+    [Id] int not null identity(1, 1) primary key,
+    [Date] date not null DEFAULT GETDATE(),
+    [EventId] int not null,
+    [Price] money not null DEFAULT 0,
+    [ClientId] int not null,
+    [Quantity] int not null DEFAULT 1,
+);
+GO
+CREATE TABLE [ArchiveEvent] (
+    [Id] int,
+    [Name] nvarchar(250),
+    [Category] nvarchar(25),
+    [Image] image,
+    [Description] ntext,
+    [Age] int,
+    [LocationId] int,
+    [Date] date,
+    [Time] time,
+    [TicketsMax] int,
+);
+GO
+CREATE TABLE [ArchiveTicket] (
+    [Id] int,
+    [Date] date,
+    [ArchiveEventId] int,
+    [Price] money,
+    [ClientId] int,
+    [Quantity] int,
+);
+GO
+ALTER TABLE [Event]
+add foreign key ([LocationId]) references [Location]([Id]);
+GO
+ALTER TABLE [Location]
+add foreign key ([CityId]) references [City]([Id]);
+GO
+ALTER TABLE [City]
+add foreign key ([CountryId]) references [Country]([Id]);
+GO
+ALTER TABLE [Ticket]
+add foreign key ([EventId]) references [Event]([Id]);
+GO
+ALTER TABLE [Ticket]
+add foreign key ([ClientId]) references [Client]([Id]);
+GO
+-- Заполнение таблиц:
+-- 1. Страны
+SET IDENTITY_INSERT [Country] ON 
+INSERT [Country] ([Id], [Name]) VALUES (1, N'Атлантида')
+INSERT [Country] ([Id], [Name]) VALUES (2, N'Гиперборея')
+SET IDENTITY_INSERT [Country] OFF
+GO
+-- 2. Города
+SET IDENTITY_INSERT [City] ON 
+INSERT [City] ([Id], [Name], [CountryId]) VALUES (1, N'Солнечный', 1)
+INSERT [City] ([Id], [Name], [CountryId]) VALUES (2, N'Лунный', 2)
+SET IDENTITY_INSERT [City] OFF
+GO
+-- 3. Места проведения
+SET IDENTITY_INSERT [Location] ON 
+INSERT [Location] ([Id], [Name], [CityId]) VALUES (1, N'Северный замок', 1)
+INSERT [Location] ([Id], [Name], [CityId]) VALUES (2, N'Южный храм', 1)
+INSERT [Location] ([Id], [Name], [CityId]) VALUES (3, N'Восточный дворец', 2)
+INSERT [Location] ([Id], [Name], [CityId]) VALUES (4, N'Западная крепость', 2)
+SET IDENTITY_INSERT [Location] OFF
+GO
+-- 4. Клиенты
+SET IDENTITY_INSERT [Client] ON 
+INSERT [Client] ([Id], [Surname], [Name], [Patronymic], [DateBirth], [EMail]) VALUES (1, N'Иванов', N'Иван', N'Иванович', CAST(N'2000-01-01' AS Date), N'I@mail')
+INSERT [Client] ([Id], [Surname], [Name], [Patronymic], [DateBirth], [EMail]) VALUES (2, N'Петров', N'Петр', N'Петрович', CAST(N'2010-01-01' AS Date), N'P@mail')
+INSERT [Client] ([Id], [Surname], [Name], [Patronymic], [DateBirth], [EMail]) VALUES (3, N'Сидоров', N'Сидор', N'Сидорович', CAST(N'2020-01-01' AS Date), N'S@mail')
+SET IDENTITY_INSERT [Client] OFF
+GO
+-- 5. Архив событий
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (1, N'Прошлогодний спектакль', N'Спектакль', NULL, NULL, 0, 1, CAST(N'2022-12-21' AS Date), CAST(N'08:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (2, N'Прошлогодний концерт', N'Концерт', NULL, NULL, 0, 2, CAST(N'2022-12-22' AS Date), CAST(N'09:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (3, N'Прошлогодняя выставка', N'Выставка', NULL, NULL, 0, 3, CAST(N'2022-12-23' AS Date), CAST(N'10:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (4, N'Прошлогодний цирк', N'Цирк', NULL, NULL, 0, 4, CAST(N'2022-12-24' AS Date), CAST(N'11:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (5, N'Прошлогодние соревнования', N'Спорт', NULL, NULL, 0, 1, CAST(N'2022-12-25' AS Date), CAST(N'12:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (6, N'Прошлогодний семинар', N'Семинары и тренинги', NULL, NULL, 0, 2, CAST(N'2022-12-26' AS Date), CAST(N'13:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (7, N'Прошлогоднее кино', N'Кино', NULL, NULL, 0, 3, CAST(N'2022-12-27' AS Date), CAST(N'14:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (8, N'Прошлогодний юмор', N'Юмор', NULL, NULL, 0, 4, CAST(N'2022-12-28' AS Date), CAST(N'15:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (9, N'Прошлогодняя вечеринка', N'Вечеринки', NULL, NULL, 0, 1, CAST(N'2022-12-29' AS Date), CAST(N'16:00:00' AS Time), 10)
+INSERT [ArchiveEvent] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (10, N'Прошлогодний утренник', N'Детям', NULL, NULL, 0, 2, CAST(N'2022-12-30' AS Date), CAST(N'10:00:00' AS Time), 10)
+GO
+-- 6. События
+SET IDENTITY_INSERT [Event] ON
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (11, N'Новогодний спектакль', N'Спектакль', NULL, NULL, 0, 1, CAST(N'2023-12-21' AS Date), CAST(N'08:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (12, N'Новогодний концерт', N'Концерт', NULL, NULL, 0, 2, CAST(N'2023-12-22' AS Date), CAST(N'09:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (13, N'Новогодняя выставка', N'Выставка', NULL, NULL, 0, 3, CAST(N'2023-12-23' AS Date), CAST(N'10:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (14, N'Новогодний цирк', N'Цирк', NULL, NULL, 0, 4, CAST(N'2023-12-24' AS Date), CAST(N'11:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (15, N'Новогодние соревнования', N'Спорт', NULL, NULL, 0, 1, CAST(N'2023-12-25' AS Date), CAST(N'12:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (16, N'Новогодний семинар', N'Семинары и тренинги', NULL, NULL, 0, 2, CAST(N'2023-12-26' AS Date), CAST(N'13:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (17, N'Новогоднее кино', N'Кино', NULL, NULL, 0, 3, CAST(N'2023-12-27' AS Date), CAST(N'14:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (18, N'Новогодний юмор', N'Юмор', NULL, NULL, 0, 4, CAST(N'2023-12-28' AS Date), CAST(N'15:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (19, N'Новогодняя вечеринка', N'Вечеринки', NULL, NULL, 10, 1, CAST(N'2023-12-29' AS Date), CAST(N'16:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (20, N'Новогодний утренник', N'Детям', NULL, NULL, 0, 2, CAST(N'2023-12-30' AS Date), CAST(N'10:00:00' AS Time), 10)
+INSERT [Event] ([Id], [Name], [Category], [Image], [Description], [Age], [LocationId], [Date], [Time], [TicketsMax]) VALUES (21, N'Новогодний фейерверк', N'Другое', NULL, NULL, 0, 3, CAST(N'2023-12-31' AS Date), CAST(N'18:00:00' AS Time), 10)
+SET IDENTITY_INSERT [Event] OFF
+GO
+-- 7. Архив билетов
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (1, CAST(N'2022-10-01' AS Date), 1, 50.0000, 1, 1)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (2, CAST(N'2022-10-02' AS Date), 2, 55.0000, 2, 2)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (3, CAST(N'2022-10-03' AS Date), 3, 60.0000, 3, 3)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (4, CAST(N'2022-10-04' AS Date), 4, 65.0000, 1, 4)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (5, CAST(N'2022-10-05' AS Date), 5, 70.0000, 2, 5)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (6, CAST(N'2022-10-06' AS Date), 6, 75.0000, 3, 6)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (7, CAST(N'2022-10-07' AS Date), 7, 80.0000, 1, 7)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (8, CAST(N'2022-10-08' AS Date), 8, 85.0000, 2, 8)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (9, CAST(N'2022-10-09' AS Date), 9, 90.0000, 3, 9)
+INSERT [ArchiveTicket] ([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity]) VALUES (10, CAST(N'2022-10-10' AS Date), 10, 95.0000, 1, 10)
+GO
+-- 8. Билеты
+SET IDENTITY_INSERT [Ticket] ON 
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (11, CAST(N'2023-11-01' AS Date), 11, 70.0000, 1, 1)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (12, CAST(N'2023-11-02' AS Date), 12, 75.0000, 2, 2)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (13, CAST(N'2023-11-03' AS Date), 13, 80.0000, 3, 3)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (14, CAST(N'2023-11-04' AS Date), 14, 85.0000, 1, 4)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (15, CAST(N'2023-11-05' AS Date), 15, 90.0000, 2, 5)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (16, CAST(N'2023-11-06' AS Date), 16, 95.0000, 3, 6)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (17, CAST(N'2023-11-07' AS Date), 17, 100.0000, 1, 7)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (18, CAST(N'2023-11-08' AS Date), 18, 105.0000, 2, 8)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (19, CAST(N'2023-11-09' AS Date), 19, 110.0000, 3, 9)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (20, CAST(N'2023-11-10' AS Date), 20, 115.0000, 1, 10)
+INSERT [Ticket] ([Id], [Date], [EventId], [Price], [ClientId], [Quantity]) VALUES (21, CAST(N'2023-11-11' AS Date), 21, 120.0000, 2, 10)
+SET IDENTITY_INSERT [Ticket] OFF
+GO
+-- II. Представления
+-- 1. Отображение всех актуальных событий со стопроцентной продажей билетов
+CREATE VIEW ViewAllTicketsSold AS
+SELECT * FROM [Event]
+WHERE [Date] > GETDATE() AND [TicketsMax] = (SELECT SUM([Quantity]) FROM [Ticket] WHERE [Ticket].[EventId] = [Event].[Id]);
+GO
+-- 2. Отображение топ-3 самых популярных актуальных событий (по количеству приобретённых билетов)
+CREATE VIEW ViewTop3PopularEvents AS
+SELECT TOP 3 [Event].[Id], [Event].[Name], SUM([Ticket].[Quantity]) AS [TotalTicketsSold]
+FROM [Event]
+INNER JOIN [Ticket] ON [Event].[Id] = [Ticket].[EventId]
+GROUP BY [Event].[Id], [Event].[Name]
+ORDER BY SUM([Ticket].[Quantity]) DESC;
+GO
+-- 3. Отображение топ-3 самых популярных категорий событий (по количеству всех приобретённых билетов). Архив событий учитывается
+CREATE VIEW Top3PopularCategories AS
+SELECT [Category], SUM([Quantity]) AS TotalTickets
+FROM (
+    SELECT [Category], [Quantity] FROM [Event] INNER JOIN [Ticket] ON [Event].[Id] = [Ticket].[EventId]
+    UNION ALL
+    SELECT [Category], [Quantity] FROM [ArchiveEvent] INNER JOIN [ArchiveTicket] ON [ArchiveEvent].[Id] = [ArchiveTicket].[ArchiveEventId]
+) AS Tickets
+GROUP BY [Category]
+ORDER BY TotalTickets DESC
+OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;
+GO
+-- 4. Отображение информации о самом активном клиенте (по количеству купленных билетов)
+CREATE VIEW ViewMostActiveClient AS
+SELECT TOP 1 C.*
+FROM Client C
+INNER JOIN Ticket T ON C.Id = T.ClientId
+GROUP BY C.Id, C.Surname, C.Name, C.Patronymic, C.DateBirth, C.EMail
+ORDER BY COUNT(T.Id) DESC;
+GO
+-- 5. Отображение информации о самой непопулярной категории (по количеству событий). Архив событий учитывается
+CREATE VIEW LeastPopularCategory AS
+SELECT Category, COUNT(*) AS TotalEvents
+FROM (
+    SELECT Category FROM Event
+    UNION ALL
+    SELECT Category FROM ArchiveEvent
+) AS CombinedEvents
+GROUP BY Category
+ORDER BY TotalEvents ASC
+OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
+GO
+-- 6. Отображение топ-3 набирающих популярность событий (по наибольшему количеству проданных билетов за последние 5 дней)
+CREATE VIEW ViewTop3TrendingEvents AS
+SELECT TOP 3 [Event].[Id], [Event].[Name], SUM([Ticket].[Quantity]) AS [TotalTicketsSold]
+FROM [Event]
+INNER JOIN [Ticket] ON [Event].[Id] = [Ticket].[EventId]
+WHERE DATEDIFF(DAY, [Ticket].[Date], GETDATE()) <= 5
+GROUP BY [Event].[Id], [Event].[Name]
+ORDER BY SUM([Ticket].[Quantity]) DESC;
+GO
+-- 7. Отображение названий городов, в которых сегодня пройдут события
+CREATE VIEW ViewCitiesWithEventsToday AS
+SELECT DISTINCT C.Name
+FROM City C
+INNER JOIN Location L ON C.Id = L.CityId
+INNER JOIN Event E ON L.Id = E.LocationId
+WHERE E.Date = CONVERT(DATE, GETDATE());
+GO
+-- III. Триггеры
+-- 1. При вставке нового клиента нужно проверять, нет ли его уже в базе данных. Если такой клиент есть, генерировать ошибку с описанием возникшей проблемы.
+CREATE TRIGGER TriggerCheckExistingClient ON [Client]
+FOR INSERT AS
+IF EXISTS (
+    SELECT C.*
+    FROM Client C
+    INNER JOIN inserted I ON C.EMail = I.EMail
+)
+BEGIN
+    RAISERROR ('Клиент с указанными данными уже зарегистрирован!', 16, 1);
+    ROLLBACK TRANSACTION;
+END
+GO
+-- 2. При вставке нового события нужно проверять, нет ли его уже в базе данных. Если такое событие есть, генерировать ошибку с описанием возникшей проблемы.
+CREATE TRIGGER TriggerCheckDuplicateEvent ON Event
+FOR INSERT, UPDATE AS
+IF 2 = (SELECT COUNT(E.Id)
+    FROM Event E, INSERTED I
+        WHERE E.Name = I.Name
+        AND E.Category = I.Category
+        AND E.LocationId = I.LocationId
+        AND E.Date = I.Date
+        AND E.Time = I.Time)
+BEGIN
+    RAISERROR ('Событие уже внесено в базу данных!', 16, 1);
+    ROLLBACK TRANSACTION;
+END
+GO
+-- 3. При попытке покупки билета проверять не достигнуто ли уже максимальное количество билетов. Если максимальное количество достигнуто, генерировать ошибку с информацией о возникшей проблеме.
+CREATE TRIGGER TriggerCheckTicketMaxQuantity ON [Ticket]
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @MaxTickets int;
+    SELECT @MaxTickets = [TicketsMax]
+    FROM [Event]
+    WHERE [Id] IN (SELECT [EventId] FROM inserted);
+    DECLARE @CurrentTickets int;
+    SELECT @CurrentTickets = SUM([Quantity])
+    FROM [Ticket]
+    WHERE [EventId] IN (SELECT [EventId] FROM inserted);
+    IF (@CurrentTickets > @MaxTickets)
+    BEGIN
+        RAISERROR ('Заказанное количество билетов больше чем осталось в наличии!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END
+GO
+-- 4. При попытке покупки билета проверять возрастные ограничения. Если возрастное ограничение нарушено, генерировать ошибку с информацией о возникшей проблеме.
+CREATE TRIGGER TriggerCheckTicketAgeRestriction ON [Ticket]
+AFTER INSERT AS
+BEGIN
+    DECLARE @MinAge int;
+    SELECT @MinAge = [Age]
+    FROM [Event]
+    WHERE [Id] IN (SELECT [EventId] FROM inserted);
+    DECLARE @CurrentDate date;
+    SET @CurrentDate = GETDATE();
+    DECLARE @InvalidTickets int;
+    SELECT @InvalidTickets = COUNT(*)
+    FROM [Ticket] t
+    JOIN [Event] e ON t.[EventId] = e.[Id]
+    WHERE t.[Id] IN (SELECT [Id] FROM inserted) AND DATEDIFF(YEAR, e.[Date], @CurrentDate) < @MinAge;
+    IF (@InvalidTickets > 0)
+    BEGIN
+        RAISERROR ('Вы не можете посетить мероприятие из-за возрастного ограничения!', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END
+GO
+-- 5. При удалении записи из таблицы «Event» переносить её в таблицу «ArchiveEvent»
+CREATE TRIGGER TriggerMoveToArchiveEvent ON [Event]
+INSTEAD OF DELETE AS
+BEGIN
+    INSERT INTO [ArchiveEvent]
+    SELECT *
+    FROM deleted;
+    INSERT INTO [ArchiveTicket]([Id], [Date], [ArchiveEventId], [Price], [ClientId], [Quantity])
+    SELECT t.[Id], t.[Date], a.[Id], t.[Price], t.[ClientId], t.[Quantity]
+    FROM [Ticket] t
+    JOIN deleted d ON t.[EventId] = d.[Id]
+    JOIN [ArchiveEvent] a ON d.[Id] = a.[Id];
+    DELETE FROM [Ticket]
+    WHERE [EventId] IN (SELECT [Id] FROM deleted);
+    DELETE FROM [Event]
+    WHERE [Id] IN (SELECT [Id] FROM deleted);
+END
+GO
+-- IV. Хранимые процедуры
+-- 1. Отображение всех актуальных событий на конкретную дату
+CREATE PROCEDURE GetEventsByDate
+    @Date DATE
+AS
+BEGIN
+    SELECT * FROM [Event] WHERE [Date] = @Date;
+END
+GO
+-- 2. Отображение всех актуальных событий из конкретной категории
+CREATE PROCEDURE GetEventsByCategory
+    @Category NVARCHAR(25)
+AS
+BEGIN
+    SELECT * FROM [Event] WHERE [Category] = @Category;
+END
+GO
+-- 3. Отобразите самое популярное событие в конкретном городе
+CREATE PROCEDURE GetMostPopularEventByCity
+    @CityName nvarchar(100)
+AS
+BEGIN
+    SELECT TOP 1 e.Id, e.Name, e.Category, e.Image, e.Description, e.Age, e.LocationId, e.Date, e.Time, e.TicketsMax
+    FROM [Event] e
+    INNER JOIN [Location] l ON e.LocationId = l.Id
+    INNER JOIN [City] c ON l.CityId = c.Id
+    WHERE
+        c.Name = @CityName
+    ORDER BY
+        (SELECT SUM(t.Quantity) FROM [Ticket] t WHERE t.EventId = e.Id) DESC;
+END
+GO
+-- 4. Показ всех событий, которые пройдут сегодня в указанное время
+CREATE PROCEDURE GetEventsByTimeToday
+    @Time TIME
+AS
+BEGIN
+    DECLARE @Today DATE;
+    SET @Today = GETDATE();
+    SELECT * FROM [Event] WHERE [Date] = @Today AND [Time] = @Time;
+END
+GO
+-- V. Система безопасности
+-- 1. Пользователь с полным доступом ко всей информации
+CREATE LOGIN [Master_User] WITH PASSWORD = 'Password123';
+USE [Poster];
+CREATE USER [Master_User] FOR LOGIN [Master_User];
+ALTER ROLE db_owner ADD MEMBER [Master_User];
+GO
+-- 2. Пользователь с правом только на чтение данных
+CREATE LOGIN [Manager_User] WITH PASSWORD = 'Password123';
+USE [Poster];
+CREATE USER [Manager_User] FOR LOGIN [Manager_User];
+ALTER ROLE db_datareader ADD MEMBER [Manager_User];
+GO
+-- 3. Пользователь с правом резервного копирования и восстановления данных
+CREATE LOGIN [Archivist_User] WITH PASSWORD = 'Password123';
+USE [Poster];
+CREATE USER [Archivist_User] FOR LOGIN [Archivist_User];
+ALTER ROLE db_backupoperator ADD MEMBER [Archivist_User];
+GO
+-- 4. Пользователь с правом создания и удаления пользователей
+CREATE LOGIN [Admin_User] WITH PASSWORD = 'Password123';
+USE [Poster];
+CREATE USER [Admin_User] FOR LOGIN [Admin_User];
+ALTER ROLE db_securityadmin ADD MEMBER [Admin_User];
+GO
+-- VI. Резервное копирование
+-- а) открыть SQL Server Management Studio и подключиться к серверу базы данных
+-- б) перейти в раздел "SQL Server Agent", щёлкнуть правой кнопкой мыши на "Работы", выбрать "Новая задача"
+-- в) в открывшемся окне "Задача" указать название и описание задачи в соответствующих полях
+-- г) перейти на вкладку "Расписание" и установить нужное расписание выполнения задачи – "1 раз в сутки", указав время выполнения
+-- д) перейти на вкладку "Выполнение", выбрать "Сценарий T-SQL", в поле "Сценарий" вставить следующий код:
+    -- USE [master];
+    -- GO
+    -- BACKUP DATABASE [Poster]
+    -- TO DISK = 'C:\Backup\Poster.bak'
+    -- WITH INIT, COMPRESSION, STATS=10;
+    -- GO
+-- нажать "ОК", чтобы сохранить задачу
